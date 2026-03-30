@@ -1,0 +1,36 @@
+# Project-specific Dockerfile for rdt (etherlab template)
+# ──────────────────────────────────────────────────────────────────────
+# This file is for EXOTIC / project-specific dependencies ONLY.
+# Common tools (colcon, rosdep, git) are installed automatically
+# by the rdt CI and deploy pipelines — do NOT add them here.
+#
+# This template pre-installs IgH EtherCAT Master (EtherLab) from
+# source so that packages depending on libethercat can build.
+
+ARG ROS_DISTRO=jazzy
+FROM ros:${ROS_DISTRO}-ros-base
+
+# ── Build & install IgH EtherCAT Master ──────────────────────────────
+ARG ETHERLAB_BRANCH=stable-1.5
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        autoconf automake libtool pkg-config linux-headers-generic \
+    && rm -rf /var/lib/apt/lists/* \
+    && git clone --depth 1 -b ${ETHERLAB_BRANCH} \
+        https://gitlab.com/etherlab.org/ethercat.git /tmp/ethercat \
+    && cd /tmp/ethercat \
+    && ./bootstrap \
+    && ./configure --prefix=/opt/etherlab --disable-kernel \
+    && make -j"$(nproc)" \
+    && make install \
+    && ldconfig \
+    && rm -rf /tmp/ethercat
+
+ENV ETHERLAB_PREFIX=/opt/etherlab
+ENV PATH="${ETHERLAB_PREFIX}/bin:${PATH}"
+ENV LD_LIBRARY_PATH="${ETHERLAB_PREFIX}/lib:${LD_LIBRARY_PATH}"
+ENV PKG_CONFIG_PATH="${ETHERLAB_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+
+# Example: add more project-specific system packages
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#       libsomelib-dev \
+#     && rm -rf /var/lib/apt/lists/*

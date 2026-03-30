@@ -1,0 +1,33 @@
+# ─────────────────────────────────────────────────────────────────────
+# ROS 2 recipe — default configuration
+# ─────────────────────────────────────────────────────────────────────
+# These are the baseline defaults baked into the ros2 recipe.
+# Projects only need to override values that differ from these
+# in their .rdt/config.yaml.
+
+project_name: ""
+recipe: ros2
+ros_distro: jazzy
+base_image: ""           # default: ros:<distro>-ros-base
+install_dir: /opt/ros
+
+build:
+  cmake_args:
+    - -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+    - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  colcon_args: []
+
+test:
+  retest_until_pass: 0
+  colcon_args: []
+
+deploy:
+  registry: ""
+  image_tag: latest
+
+demo:
+  image: ""
+  x11: false
+  gpu: false
+  network: host
+  extra_args: []

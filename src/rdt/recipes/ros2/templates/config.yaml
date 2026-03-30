@@ -1,0 +1,37 @@
+# rdt (Robotics Dev Tools) — project configuration
+# ─────────────────────────────────────────────────────────────────────
+# Only include settings you want to override.
+# All other values come from the recipe defaults (ros2).
+#
+# To see full recipe defaults:
+#   rdt init --list-templates
+# ─────────────────────────────────────────────────────────────────────
+
+project_name: ""
+
+# ── Uncomment below to override recipe defaults ────────────────────
+
+# ros_distro: jazzy
+# base_image: ""
+# install_dir: /opt/ros
+
+# build:
+#   cmake_args:
+#     - -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+#     - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+#   colcon_args: []
+
+# test:
+#   retest_until_pass: 0
+#   colcon_args: []
+
+# deploy:
+#   registry: ""
+#   image_tag: latest
+
+# demo:
+#   image: ""
+#   x11: false
+#   gpu: false
+#   network: host
+#   extra_args: []
