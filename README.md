@@ -17,18 +17,40 @@ A unified, recipe-driven CLI for build, test, CI/CD, and demo workflows.
 
 ### From source (development)
 
+Using Poetry:
+
 ```bash
 git clone https://github.com/tpoignonec/rtd.git
 
-# Virtual environment
-sudo apt install python3-venv
+# Python3 deps
+sudo apt install python3 python3-poetry
+
+# Install package
+cd rdt
+poetry install
+
+# Run
+poetry shell
+rdt --help
+```
+
+Or using Pip:
+
+```bash
+git clone https://github.com/tpoignonec/rtd.git
+
+# Deps and virtual environment
+sudo apt install python3 python3-pip python3-venv
 python3 -m venv .venv
 source .venv/bin/activate
 
 # Install package
-pip install -e ./rtd
-```
+pip install -e ./rdt[all]
 
+# Run
+poetry shell
+rdt --help
+```
 
 ### From PyPI
 

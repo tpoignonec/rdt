@@ -27,20 +27,19 @@ python = "^3.10"
 click = "^8.1"
 pydantic = "^2.0"
 rich = "^13.0"
-pyyaml = "^6.0"
 
-[tool.poetry.extras]
-ci = ["dagger-io", "anyio"]
-demo = ["rocker", "etherlab-rocker"]
-all = ["dagger-io", "anyio", "rocker", "etherlab-rocker"]
+pyyaml = "^6.0"
+dagger-io = ">=0.9,<1.0"
+anyio = ">=4.0"
+rocker = "*"
+etherlab-rocker = "*"
+
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
 pytest-cov = "^5.0"
 ruff = ">=0.4"
 mypy = "^1.10"
-dagger-io = ">=0.9,<1.0"
-anyio = ">=4.0"
 
 [tool.poetry.scripts]
 rdt = "rdt.cli:cli"

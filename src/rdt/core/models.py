@@ -12,15 +12,15 @@ from pydantic import AfterValidator, BaseModel, Field
 
 # ── Supported ROS 2 distributions ────────────────────────────────────
 
-SUPPORTED_ROS_DISTROS: tuple[str, ...] = ("humble", "iron", "jazzy", "rolling")
+SUPPORTED_ROS_DISTROS: tuple[str, ...] = ('humble', 'iron', 'jazzy', 'rolling')
 
 
 def _validate_ros_distro(value: str) -> str:
     value = value.strip().lower()
     if value not in SUPPORTED_ROS_DISTROS:
         raise ValueError(
-            f"Unsupported ROS distro '{value}'. "
-            f"Choose from: {', '.join(SUPPORTED_ROS_DISTROS)}"
+            f'Unsupported ROS distro "{value}". '
+            f'Choose from: {", ".join(SUPPORTED_ROS_DISTROS)}'
         )
     return value
 
@@ -36,12 +36,12 @@ class RosBaseConfig(BaseModel):
     """Fields shared by every ROS 2 build/test/deploy config."""
 
     ros_distro: RosDistro = Field(
-        default="jazzy",
-        description="Target ROS 2 distribution.",
+        default='jazzy',
+        description='Target ROS 2 distribution.',
     )
     base_image: str = Field(
-        default="",
-        description="Base Docker image (default: ros:<distro>-ros-base).",
+        default='',
+        description='Base Docker image for building and deployment.',
     )
 
 
@@ -53,11 +53,11 @@ class ProjectConfig(BaseModel):
     validate them independently.
     """
 
-    project_name: str = Field(default="", description="Project / meta-package name.")
-    recipe: str = Field(default="ros2", description="Active recipe name.")
-    ros_distro: RosDistro = Field(default="jazzy")
-    base_image: str = Field(default="")
-    install_dir: str = Field(default="/opt/ros")
+    project_name: str = Field(default='', description='Project / meta-package name.')
+    recipe: str = Field(default='ros2', description='Active recipe name.')
+    ros_distro: RosDistro = Field(default='jazzy', description='Target ROS 2 distribution.')
+    base_image: str = Field(default='', description='Base Docker image for building and deployment.')
+    install_dir: str = Field(default='/opt/ros/icube', description='ROS installation directory.')
 
     # Per-section overrides (validated lazily by each command).
     build: dict[str, Any] = Field(default_factory=dict)

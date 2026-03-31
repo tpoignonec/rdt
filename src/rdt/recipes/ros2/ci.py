@@ -14,9 +14,12 @@ import os
 import subprocess
 
 import click
+import dagger
 
 from rdt.core.config import get_dockerfile_path, resolve_config
-from rdt.core.console import abort, debug, info, success
+from rdt.core.console import (
+    abort, debug, info, success
+)
 from rdt.core.runner import run_dagger_pipeline
 from rdt.recipes.ros2.commands import (
     COLCON_TEST_RESULT_CMD,
@@ -35,6 +38,14 @@ def _resolve_base_image(ros_distro: str, base_image: str) -> str:
     resolved = base_image or f"ros:{ros_distro}-ros-base"
     debug(f"Resolved base image: {resolved}")
     return resolved
+
+
+def _dagger_client() -> dagger.Connection:
+    """Create and return a Dagger client connection."""
+    dagger_kwargs = {}
+
+    debug("Connecting to Dagger...")
+    return dagger.Connection(**dagger_kwargs)
 
 
 # ── Layered container stages ─────────────────────────────────────────
@@ -138,9 +149,7 @@ def _ci_build(config: BuildConfig) -> None:
     info(f"CI build  (distro={distro}, base={_resolve_base_image(distro, config.base_image)})")
 
     async def _pipeline() -> None:
-        import dagger
-
-        async with dagger.Connection() as client:
+        async with _dagger_client() as client:
             src = client.host().directory(".", exclude=[".git", "build", "install", "log"])
             base = _stage_base(client, distro, config.base_image)
             ros_base = _stage_ros_base(base)
@@ -161,16 +170,15 @@ def _ci_test(config: TestingConfig) -> None:
     info(f"CI test  (distro={distro}, retries={config.retest_until_pass})")
 
     async def _pipeline() -> None:
-        import dagger
-
-        async with dagger.Connection() as client:
+        async with _dagger_client() as client:
             src = client.host().directory(".", exclude=[".git", "build", "install", "log"])
             base = _stage_base(client, distro, config.base_image)
             ros_base = _stage_ros_base(base)
             deps = _stage_deps(ros_base, src, distro)
+            cmake_args = getattr(config, "cmake_args", None)
             built = _stage_build(
                 deps, distro, config.colcon_args,
-                cmake_args=config.cmake_args,
+                cmake_args=cmake_args,
             )
             tested = _stage_test(
                 built, distro, config.colcon_args,
@@ -194,9 +202,7 @@ def _deploy(config: DeployConfig) -> None:
     info(f"Deploy  (image={image_name}, push={config.push}, install={ws_install})")
 
     async def _pipeline() -> None:
-        import dagger
-
-        async with dagger.Connection() as client:
+        async with _dagger_client() as client:
             src = client.host().directory(".", exclude=[".git", "build", "install", "log"])
 
             base = _stage_base(client, distro, config.base_image)
