@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
 from click.testing import CliRunner
 
 from rdt.cli import cli
 
 
-def test_help():
+def test_help() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
     assert result.exit_code == 0
@@ -21,14 +24,14 @@ def test_help():
     assert "init" in result.output
 
 
-def test_version():
+def test_version() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["--version"])
     assert result.exit_code == 0
     assert "0.1.0" in result.output
 
 
-def test_deps_help():
+def test_deps_help() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["deps", "--help"])
     assert result.exit_code == 0
@@ -38,7 +41,7 @@ def test_deps_help():
     assert "--skip-rosdep" in result.output
 
 
-def test_build_help():
+def test_build_help() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["build", "--help"])
     assert result.exit_code == 0
@@ -46,14 +49,14 @@ def test_build_help():
     assert "--cmake-build-type" in result.output
 
 
-def test_test_help():
+def test_test_help() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["test", "--help"])
     assert result.exit_code == 0
     assert "--retest-until-pass" in result.output
 
 
-def test_build_docker_help():
+def test_build_docker_help() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["build-docker", "--help"])
     assert result.exit_code == 0
@@ -61,7 +64,7 @@ def test_build_docker_help():
     assert "--install-prefix" in result.output
 
 
-def test_init_list(tmp_path, monkeypatch):
+def test_init_list(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
     result = runner.invoke(cli, ["init", "--list"])
@@ -70,7 +73,7 @@ def test_init_list(tmp_path, monkeypatch):
         assert target in result.output
 
 
-def test_init_creates_files(tmp_path, monkeypatch):
+def test_init_creates_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
     result = runner.invoke(cli, ["init", "--project-name", "mybot", "--without", "devcontainer"])
@@ -83,7 +86,7 @@ def test_init_creates_files(tmp_path, monkeypatch):
     assert (tmp_path / "mybot.repos").exists()
 
 
-def test_init_substitutes_project_name(tmp_path, monkeypatch):
+def test_init_substitutes_project_name(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
     runner.invoke(cli, ["init", "--project-name", "mybot", "--with", "repos", "--with", "github"])
@@ -96,7 +99,7 @@ def test_init_substitutes_project_name(tmp_path, monkeypatch):
     assert "PROJECT_NAME" not in ci_content
 
 
-def test_init_force_overwrites(tmp_path, monkeypatch):
+def test_init_force_overwrites(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
     runner.invoke(cli, ["init", "--project-name", "mybot", "--without", "devcontainer"])

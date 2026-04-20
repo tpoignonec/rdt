@@ -2,19 +2,21 @@
 
 from __future__ import annotations
 
+from collections.abc import Generator
+
 import pytest
 
 from rdt.context import Context, get_context
 
 
-@pytest.fixture(autouse=True)
-def _clear_context_cache():
+@pytest.fixture(autouse=True)  # type: ignore[misc]
+def _clear_context_cache() -> Generator[None, None, None]:
     get_context.cache_clear()
     yield
     get_context.cache_clear()
 
 
-def test_local_detection(monkeypatch):
+def test_local_detection(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     monkeypatch.delenv("GITLAB_CI", raising=False)
     ctx = get_context()
@@ -24,7 +26,7 @@ def test_local_detection(monkeypatch):
     assert ctx.platform == "local"
 
 
-def test_github_detection(monkeypatch):
+def test_github_detection(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GITHUB_ACTIONS", "true")
     monkeypatch.setenv("GITHUB_REF_NAME", "main")
     monkeypatch.setenv("GITHUB_SHA", "abc123")
@@ -41,7 +43,7 @@ def test_github_detection(monkeypatch):
     assert ctx.platform == "github"
 
 
-def test_gitlab_detection(monkeypatch):
+def test_gitlab_detection(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GITLAB_CI", "true")
     monkeypatch.setenv("CI_COMMIT_REF_NAME", "feature/my-branch")
     monkeypatch.setenv("CI_COMMIT_SHA", "def456")
@@ -56,7 +58,7 @@ def test_gitlab_detection(monkeypatch):
     assert ctx.platform == "gitlab"
 
 
-def test_image_tag_main():
+def test_image_tag_main() -> None:
     ctx = Context(
         is_github=True,
         is_gitlab=False,
@@ -71,7 +73,7 @@ def test_image_tag_main():
     assert ctx.resolve_image_tag() == "latest"
 
 
-def test_image_tag_master():
+def test_image_tag_master() -> None:
     ctx = Context(
         is_github=True,
         is_gitlab=False,
@@ -86,7 +88,7 @@ def test_image_tag_master():
     assert ctx.resolve_image_tag() == "latest"
 
 
-def test_image_tag_feature_branch():
+def test_image_tag_feature_branch() -> None:
     ctx = Context(
         is_github=False,
         is_gitlab=True,
@@ -101,7 +103,7 @@ def test_image_tag_feature_branch():
     assert ctx.resolve_image_tag() == "feature-my-feature"
 
 
-def test_registry_credentials(monkeypatch):
+def test_registry_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GITLAB_CI", "true")
     monkeypatch.setenv("CI_COMMIT_REF_NAME", "main")
     monkeypatch.setenv("CI_COMMIT_SHA", "")

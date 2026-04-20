@@ -6,6 +6,7 @@ import runpy
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -17,14 +18,15 @@ from rdt.runner import run, run_shell
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 
-def _extract_html_context(conf_py: Path) -> dict:  # type: ignore[type-arg]
+def _extract_html_context(conf_py: Path) -> dict[str, Any]:
     """Execute conf.py in an isolated namespace and return html_context."""
     ns = runpy.run_path(str(conf_py))
-    return ns.get("html_context", {})
+    result: dict[str, Any] = ns.get("html_context", {})
+    return result
 
 
-def _languages_for_branch(html_context: dict, branch: str) -> list[str]:  # type: ignore[type-arg]
-    per_branch: dict = html_context.get("language_per_branch", {})
+def _languages_for_branch(html_context: dict[str, Any], branch: str) -> list[str]:
+    per_branch: dict[str, Any] = html_context.get("language_per_branch", {})
     if branch in per_branch:
         return list(per_branch[branch])
     return [html_context.get("default_language", "en")]
@@ -106,7 +108,7 @@ def deploy_doc_cmd(built_doc_path: str | None, publish_root: str | None) -> None
         abort(f"Built docs not found at {built}. Run 'rdt build-doc' first.")
 
     if ctx.is_local:
-        dest = Path(publish_root)
+        dest = Path(publish_root or "/tmp/rdt-doc-publish")
         if dest.exists():
             shutil.rmtree(dest)
         shutil.copytree(str(built), str(dest))

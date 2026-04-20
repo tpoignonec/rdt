@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import textwrap
+from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from rdt.config import RdtConfig, load_config
 
 
-def test_defaults():
+def test_defaults() -> None:
     config = RdtConfig()
     assert config.ros_distro == "jazzy"
     assert config.install_dir == "/opt/ros"
@@ -18,13 +20,13 @@ def test_defaults():
     assert config.docker.builder == "docker"
 
 
-def test_load_missing_file(tmp_path, monkeypatch):
+def test_load_missing_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     config = load_config()
     assert config == RdtConfig()
 
 
-def test_load_partial_yaml(tmp_path, monkeypatch):
+def test_load_partial_yaml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     (tmp_path / ".rdt.yaml").write_text(
         textwrap.dedent("""\
@@ -40,7 +42,7 @@ def test_load_partial_yaml(tmp_path, monkeypatch):
     assert config.test.retest_until_pass == 0  # default preserved
 
 
-def test_load_full_yaml(tmp_path, monkeypatch):
+def test_load_full_yaml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     (tmp_path / ".rdt.yaml").write_text(
         textwrap.dedent("""\
@@ -69,14 +71,14 @@ def test_load_full_yaml(tmp_path, monkeypatch):
     assert config.doc.sphinx_dir == "docs/sphinx"
 
 
-def test_invalid_builder(tmp_path, monkeypatch):
+def test_invalid_builder(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     (tmp_path / ".rdt.yaml").write_text("docker:\n  builder: podman\n")
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         load_config()
 
 
-def test_config_discovery_walks_up(tmp_path, monkeypatch):
+def test_config_discovery_walks_up(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Config in parent dir is found when cwd is a subdirectory."""
     (tmp_path / ".rdt.yaml").write_text("ros_distro: iron\n")
     subdir = tmp_path / "src" / "my_pkg"
@@ -86,7 +88,9 @@ def test_config_discovery_walks_up(tmp_path, monkeypatch):
     assert config.ros_distro == "iron"
 
 
-def test_config_discovery_stops_at_git_root(tmp_path, monkeypatch):
+def test_config_discovery_stops_at_git_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Config above the .git root is not found."""
     (tmp_path / ".rdt.yaml").write_text("ros_distro: iron\n")
     repo = tmp_path / "repo"

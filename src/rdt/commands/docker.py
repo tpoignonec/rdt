@@ -10,7 +10,7 @@ import click
 
 from rdt.config import load_config
 from rdt.console import info, success
-from rdt.context import get_context
+from rdt.context import Context, get_context
 from rdt.runner import run
 
 
@@ -80,12 +80,10 @@ def _docker_build(image: str, dockerfile: str, bargs: dict[str, str]) -> None:
     run(cmd)
 
 
-def _kaniko_build(image: str, dockerfile: str, bargs: dict[str, str], ctx: object) -> None:
-    if hasattr(ctx, "registry_token") and ctx.registry_token:  # type: ignore[union-attr]
+def _kaniko_build(image: str, dockerfile: str, bargs: dict[str, str], ctx: Context) -> None:
+    if ctx.registry_token:
         registry = image.split("/")[0]
-        auth = base64.b64encode(
-            f"{ctx.registry_user}:{ctx.registry_token}".encode()  # type: ignore[union-attr]
-        ).decode()
+        auth = base64.b64encode(f"{ctx.registry_user}:{ctx.registry_token}".encode()).decode()
         config_path = Path("/kaniko/.docker/config.json")
         config_path.parent.mkdir(parents=True, exist_ok=True)
         config_path.write_text(json.dumps({"auths": {registry: {"auth": auth}}}))
