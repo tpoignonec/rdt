@@ -7,6 +7,24 @@ See [spec.md](spec.md) for the full specification.
 
 ## Install
 
+### From Pypi
+
+TODO
+
+### From source
+
+Create and activate a virtual environment:
+
+```bash
+sudo apt update
+sudo apt install python3-venv
+
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install `rdt` inside the activated virtual environment:
+
 ```bash
 pip install rdt
 ```

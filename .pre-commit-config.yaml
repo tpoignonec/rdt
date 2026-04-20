@@ -1,0 +1,52 @@
+# Pre-commit hooks for the rdt package.
+#
+# Hooks included:
+#   general    — trailing whitespace, EOF newline, YAML/TOML validity,
+#                merge-conflict markers, large-file guard, stray debug statements
+#   ruff       — Python linting (pyflakes, pycodestyle, isort, …) with auto-fix
+#   ruff-format — Python formatting (Black-compatible)
+#   mypy       — static type checking (strict)
+#
+# Setup (once per clone):
+#   pip install pre-commit
+#   pre-commit install          # installs the git commit hook
+#
+# Run manually:
+#   pre-commit run              # staged files only
+#   pre-commit run --all-files  # entire repo
+#
+# Update hook versions:
+#   pre-commit autoupdate
+
+repos:
+  # ── General file hygiene ──────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: debug-statements
+
+  # ── Python linting and formatting (ruff) ─────────────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.7
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # ── Static type checking (mypy) ───────────────────────────────────────────
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - click>=8.1
+          - pydantic>=2.0
+          - pyyaml>=6.0
+          - rich>=13.0
+          - types-pyyaml
