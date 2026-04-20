@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import os
+import shutil
 from pathlib import Path
 
+import click
 import pytest
 from click.testing import CliRunner
 
@@ -39,6 +42,25 @@ def test_deps_help() -> None:
     assert "--skip-vcs" in result.output
     assert "--skip-apt" in result.output
     assert "--skip-rosdep" in result.output
+
+
+def test_deps_uses_sudo_when_not_root(monkeypatch: pytest.MonkeyPatch) -> None:
+    import rdt.commands.deps as deps
+
+    monkeypatch.setattr(os, "geteuid", lambda: 1000)
+    monkeypatch.setattr(shutil, "which", lambda path: "/usr/bin/sudo")
+
+    assert deps._apt_command() == "sudo apt-get update && apt-get upgrade -y"
+
+
+def test_deps_requires_root_or_sudo(monkeypatch: pytest.MonkeyPatch) -> None:
+    import rdt.commands.deps as deps
+
+    monkeypatch.setattr(os, "geteuid", lambda: 1000)
+    monkeypatch.setattr(shutil, "which", lambda path: None)
+
+    with pytest.raises(click.ClickException):
+        deps._apt_command()
 
 
 def test_build_help() -> None:

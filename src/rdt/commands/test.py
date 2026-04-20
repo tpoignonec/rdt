@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import click
 
-from rdt.commands._ros import colcon_test_cmd, source_ros
+from rdt.commands._ros import colcon_test_cmd, source_ros_distro
 from rdt.config import load_config
 from rdt.console import info, success
 from rdt.runner import run_shell
@@ -36,8 +36,8 @@ def test_cmd(
     colcon = list(colcon_args) if colcon_args else list(config.test.colcon_args)
     pkgs = list(packages_select) if packages_select else list(config.test.packages_select)
 
-    # Source ROS underlay + workspace overlay (if built)
-    source = f"{source_ros(inst_dir, distro)} && {{ . install/setup.bash 2>/dev/null || true; }}"
+    # Source the system ROS distro and then overlay workspace install if available.
+    source = f"{source_ros_distro(distro)} && {{ . install/setup.bash 2>/dev/null || true; }}"
     test_str = colcon_test_cmd(retries, colcon, pkgs)
     info(f"Running tests (distro={distro})...")
     run_shell(f"{source} && {test_str} && colcon test-result --verbose")

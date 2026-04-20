@@ -14,6 +14,17 @@ class CommandError(Exception):
         super().__init__(f"Command failed (exit {returncode}): {cmd}")
 
 
+def _clean_env(env: dict[str, str]) -> dict[str, str]:
+    """Remove active virtualenv entries so ROS system Python is used."""
+    venv = env.pop("VIRTUAL_ENV", None)
+    env.pop("PYTHONHOME", None)
+    if venv:
+        path_dirs = env.get("PATH", "").split(os.pathsep)
+        env["PATH"] = os.pathsep.join(d for d in path_dirs if not d.startswith(venv))
+        debug(f"Stripped active virtualenv from PATH: {env['PATH']}")
+    return env
+
+
 def run(
     cmd: Sequence[str],
     *,
@@ -23,7 +34,7 @@ def run(
     check: bool = True,
 ) -> int:
     """Run a command, streaming output to the terminal. Returns returncode."""
-    env = os.environ.copy()
+    env = _clean_env(os.environ.copy())
     if extra_env:
         env.update(extra_env)
     debug(f"$ {shlex.join(cmd)}")
@@ -47,7 +58,7 @@ def run_shell(
     check: bool = True,
 ) -> int:
     """Run a bash script, streaming output to the terminal. Returns returncode."""
-    env = os.environ.copy()
+    env = _clean_env(os.environ.copy())
     if extra_env:
         env.update(extra_env)
     debug(f"$ {script}")

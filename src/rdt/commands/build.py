@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import click
 
-from rdt.commands._ros import colcon_build_cmd, source_ros
+from rdt.commands._ros import colcon_build_cmd, source_ros_distro
 from rdt.config import load_config
 from rdt.console import info, success
 from rdt.runner import run_shell
@@ -39,5 +39,5 @@ def build_cmd(
 
     cmd = colcon_build_cmd(inst_base, cmake, build_type, colcon, pkgs)
     info(f"Building workspace (distro={distro}, install-base={inst_base})...")
-    run_shell(f"{source_ros(inst_dir, distro)} && {cmd}")
+    run_shell(f"{source_ros_distro(distro)} && {cmd}")
     success("Build complete.")

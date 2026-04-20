@@ -2,11 +2,20 @@
 
 from __future__ import annotations
 
-from rdt.commands._ros import colcon_build_cmd, colcon_test_cmd, source_ros
+from rdt.commands._ros import (
+    colcon_build_cmd,
+    colcon_test_cmd,
+    source_ros_distro,
+    source_ros_ws,
+)
 
 
-def test_source_ros() -> None:
-    assert source_ros("/opt/ros", "jazzy") == ". /opt/ros/jazzy/setup.bash"
+def test_source_ros_ws() -> None:
+    assert source_ros_ws("/opt/ros/my_ws") == ". /opt/ros/my_ws/setup.bash"
+
+
+def test_source_ros_distro() -> None:
+    assert source_ros_distro("jazzy") == ". /opt/ros/jazzy/setup.bash"
 
 
 def test_colcon_build_minimal() -> None:

@@ -78,6 +78,17 @@ def test_invalid_builder(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Non
         load_config()
 
 
+def test_empty_docker_section_uses_defaults(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".rdt.yaml").write_text("docker:\n")
+    config = load_config()
+    assert config.docker.registry == ""
+    assert config.docker.dockerfile == "Dockerfile"
+    assert config.docker.builder == "docker"
+
+
 def test_config_discovery_walks_up(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Config in parent dir is found when cwd is a subdirectory."""
     (tmp_path / ".rdt.yaml").write_text("ros_distro: iron\n")

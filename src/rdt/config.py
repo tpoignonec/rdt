@@ -56,6 +56,13 @@ def find_config_path() -> Path | None:
     return None
 
 
+def _normalize_config_data(data: dict) -> dict:
+    for key in ("build", "test", "docker", "doc"):
+        if data.get(key) is None:
+            data[key] = {}
+    return data
+
+
 def load_config() -> RdtConfig:
     """Load .rdt.yaml if present; otherwise return all-defaults config."""
     path = find_config_path()
@@ -63,4 +70,4 @@ def load_config() -> RdtConfig:
         return RdtConfig()
     with path.open() as fh:
         data = yaml.safe_load(fh) or {}
-    return RdtConfig.model_validate(data)
+    return RdtConfig.model_validate(_normalize_config_data(data))

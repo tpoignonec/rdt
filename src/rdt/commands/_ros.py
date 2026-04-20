@@ -7,9 +7,17 @@ from pathlib import Path
 from rdt.console import warn
 
 
-def source_ros(install_dir: str, ros_distro: str) -> str:
-    """Bash snippet that sources the ROS2 underlay setup file."""
-    return f". {install_dir}/{ros_distro}/setup.bash"
+def source_ros_ws(install_dir: str) -> str:
+    """Bash snippet that sources the ROS2 workspace underlay setup file."""
+    return f". {install_dir}/setup.bash"
+
+
+def source_ros_distro(ros_distro: str) -> str:
+    """Bash snippet that sources the system ROS2 distribution setup file."""
+    return f". /opt/ros/{ros_distro}/setup.bash"
+
+
+source_ros = source_ros_ws
 
 
 def find_repos_file(hint: str | None = None) -> Path | None:

@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import os
+import shutil
+
 import click
 
-from rdt.commands._ros import find_repos_file, source_ros
+from rdt.commands._ros import find_repos_file, source_ros_distro
 from rdt.config import load_config
 from rdt.console import info, success
 from rdt.runner import run, run_shell
@@ -37,15 +40,26 @@ def deps_cmd(
 
     if not skip_apt:
         info("Running apt update / upgrade...")
-        run_shell("apt-get update && apt-get upgrade -y")
+        run_shell(_apt_command())
 
     if not skip_rosdep:
         info(f"Installing rosdep dependencies (distro={distro})...")
         run_shell(
-            f"{source_ros(config.install_dir, distro)}"
+            f"{source_ros_distro(distro)}"
             " && (rosdep init 2>/dev/null || true)"
             f" && rosdep update --rosdistro {distro}"
             f" && rosdep install --from-paths . --ignore-src -y --rosdistro {distro}"
         )
 
     success("Dependencies ready.")
+
+
+def _apt_command() -> str:
+    cmd = "apt-get update && apt-get upgrade -y"
+    if os.geteuid() == 0:
+        return cmd
+    if shutil.which("sudo"):
+        return f"sudo {cmd}"
+    raise click.ClickException(
+        "apt-get update/upgrade requires root privileges; run `sudo rdt deps` or install sudo."
+    )
