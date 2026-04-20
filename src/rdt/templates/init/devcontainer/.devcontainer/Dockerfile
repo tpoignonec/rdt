@@ -13,7 +13,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install rdt for local development convenience
-RUN pip install rdt
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3-pip python3-venv git \
+    && python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --upgrade pip \
+    && /opt/venv/bin/pip install git+https://github.com/tpoignonec/rdt.git@main \
+    && ln -s /opt/venv/bin/rdt /usr/local/bin/rdt \
+    && rm -rf /var/lib/apt/lists/*
 
 # Non-root user
 ARG USERNAME=dev

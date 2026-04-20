@@ -10,8 +10,11 @@ ARG ROS_DISTRO=jazzy
 ARG INSTALL_PREFIX=/opt/ros/PROJECT_NAME
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3-pip \
-    && pip install rdt \
+    && apt-get install -y --no-install-recommends python3-pip python3-venv git \
+    && python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --upgrade pip \
+    && /opt/venv/bin/pip install git+https://github.com/tpoignonec/rdt.git@main \
+    && ln -s /opt/venv/bin/rdt /usr/local/bin/rdt \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ws
@@ -33,9 +36,13 @@ FROM ${BASE_IMAGE} AS runtime
 ARG ROS_DISTRO=jazzy
 ARG INSTALL_PREFIX=/opt/ros/PROJECT_NAME
 
+# Install rdt
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3-pip \
-    && pip install rdt \
+    && apt-get install -y --no-install-recommends python3-pip python3-venv git \
+    && python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --upgrade pip \
+    && /opt/venv/bin/pip install git+https://github.com/tpoignonec/rdt.git@main \
+    && ln -s /opt/venv/bin/rdt /usr/local/bin/rdt \
     && rm -rf /var/lib/apt/lists/*
 
 # Bring sources in temporarily to resolve rosdep dependencies, then discard them
