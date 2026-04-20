@@ -30,8 +30,8 @@ rdt/
             ├── deps.py         # rdt deps
             ├── build.py        # rdt build
             ├── test.py         # rdt test
-            ├── docker.py       # rdt build-docker, rdt deploy-docker
-            ├── doc.py          # rdt build-doc, rdt deploy-doc
+            ├── docker.py       # rdt docker-build, rdt doc-deployker
+            ├── doc.py          # rdt doc-build, rdt doc-deploy
             └── init.py         # rdt init
 ```
 
@@ -117,12 +117,12 @@ rdt test [OPTIONS]
 
 ---
 
-### 3.4 `rdt build-docker`
+### 3.4 `rdt docker-build`
 
 Build a Docker image for the project using a **multi-stage Dockerfile** (see §6).
 
 ```
-rdt build-docker [OPTIONS]
+rdt docker-build [OPTIONS]
 ```
 
 | Flag | Default | Description |
@@ -135,12 +135,12 @@ rdt build-docker [OPTIONS]
 | `--ros-distro` | from config / `jazzy` | Passed as `ROS_DISTRO` build-arg |
 | `--install-prefix` | `/opt/ros/<project-name>` | Passed as `INSTALL_PREFIX` build-arg |
 
-**What `rdt build-docker` does:**
+**What `rdt docker-build` does:**
 1. Resolves the image name and tag (see §5).
 2. Injects `ROS_DISTRO` and `INSTALL_PREFIX` as `--build-arg` values.
 3. Calls `docker build` (or Kaniko executor — see §7) and tags the result.
 
-The **build logic lives entirely in the project's Dockerfile** — `rdt build-docker` is just a thin wrapper that supplies context-derived values as build arguments and handles tagging. The Dockerfile template (provided by `rdt init`) is described in §6.
+The **build logic lives entirely in the project's Dockerfile** — `rdt docker-build` is just a thin wrapper that supplies context-derived values as build arguments and handles tagging. The Dockerfile template (provided by `rdt init`) is described in §6.
 
 **Builder selection:**
 - `docker`: uses `docker build` — works locally and on GitHub Actions.
@@ -148,12 +148,12 @@ The **build logic lives entirely in the project's Dockerfile** — `rdt build-do
 
 ---
 
-### 3.5 `rdt deploy-docker`
+### 3.5 `rdt doc-deployker`
 
 Push a previously built Docker image to a registry.
 
 ```
-rdt deploy-docker [OPTIONS]
+rdt doc-deployker [OPTIONS]
 ```
 
 | Flag | Default | Description |
@@ -166,12 +166,12 @@ rdt deploy-docker [OPTIONS]
 
 ---
 
-### 3.6 `rdt build-doc`
+### 3.6 `rdt doc-build`
 
 Build Sphinx documentation (with multi-language support).
 
 ```
-rdt build-doc [OPTIONS]
+rdt doc-build [OPTIONS]
 ```
 
 | Flag | Default | Description |
@@ -188,12 +188,12 @@ rdt build-doc [OPTIONS]
 
 ---
 
-### 3.7 `rdt deploy-doc`
+### 3.7 `rdt doc-deploy`
 
 Deploy built documentation to GitHub Pages or GitLab Pages.
 
 ```
-rdt deploy-doc [OPTIONS]
+rdt doc-deploy [OPTIONS]
 ```
 
 | Flag | Default | Description |
@@ -305,7 +305,7 @@ Full image name: `<registry>/<project-name>:<tag>`
 
 ## 6. Multi-Stage Dockerfile Strategy
 
-`rdt build-docker` delegates all build logic to the project's **Dockerfile** — it only drives tagging and passes context values as build arguments. The Dockerfile follows a two-stage pattern that produces a lean runtime image containing **only the compiled install artifacts**, not sources or build tools.
+`rdt docker-build` delegates all build logic to the project's **Dockerfile** — it only drives tagging and passes context values as build arguments. The Dockerfile follows a two-stage pattern that produces a lean runtime image containing **only the compiled install artifacts**, not sources or build tools.
 
 ### 6.1 Stage overview
 
@@ -389,10 +389,10 @@ ENTRYPOINT ["/bin/bash", "-c", ". ${INSTALL_PREFIX}/setup.bash && exec \"$@\"", 
 CMD ["bash"]
 ```
 
-### 6.3 How `rdt build-docker` drives the build
+### 6.3 How `rdt docker-build` drives the build
 
 ```
-rdt build-docker
+rdt docker-build
   │
   ├── resolves image name:  <registry>/<project>:<tag>   (§5.1)
   ├── resolves ROS_DISTRO:  from config / CLI flag
@@ -408,7 +408,7 @@ rdt build-docker
           .
 ```
 
-`rdt deploy-docker` is a separate step that calls `docker push <image>:<tag>` after login.
+`rdt doc-deployker` is a separate step that calls `docker push <image>:<tag>` after login.
 
 ### 6.4 Overriding the base image
 
@@ -429,9 +429,9 @@ GitLab CI in rootless mode (no DinD) cannot run `docker build`. Use **Kaniko**:
 
 - `--builder kaniko` calls the `executor` binary (available in `gcr.io/kaniko-project/executor` image).
 - The GitLab CI job must use that image or have `executor` on PATH.
-- Kaniko pushes the image directly to the registry during build — **no separate `rdt deploy-docker` step needed** when using Kaniko.
+- Kaniko pushes the image directly to the registry during build — **no separate `rdt doc-deployker` step needed** when using Kaniko.
 
-**What `rdt build-docker --builder kaniko` calls:**
+**What `rdt docker-build --builder kaniko` calls:**
 
 ```
 /kaniko/executor \
@@ -471,8 +471,8 @@ jobs:
       - run: rdt deps
       - run: rdt build
       - run: rdt test
-      - run: rdt build-docker
-      - run: rdt deploy-docker
+      - run: rdt docker-build
+      - run: rdt doc-deployker
         env:
           REGISTRY_USER: ${{ github.actor }}
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -489,23 +489,23 @@ build-test:
     - rdt build
     - rdt test
 
-build-docker:
+docker-build:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
     - pip install rdt
-    - rdt build-docker --builder kaniko
+    - rdt docker-build --builder kaniko
   variables:
     REGISTRY_USER: $CI_REGISTRY_USER
     REGISTRY_TOKEN: $CI_REGISTRY_PASSWORD
 
-deploy-doc:
+doc-deploy:
   image: python:3.12
   script:
     - pip install rdt
-    - rdt build-doc
-    - rdt deploy-doc
+    - rdt doc-build
+    - rdt doc-deploy
   only:
     - main
 ```

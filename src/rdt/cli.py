@@ -27,10 +27,10 @@ def _register() -> None:
     cli.add_command(deps_cmd, "deps")
     cli.add_command(build_cmd, "build")
     cli.add_command(test_cmd, "test")
-    cli.add_command(build_docker_cmd, "build-docker")
-    cli.add_command(deploy_docker_cmd, "deploy-docker")
-    cli.add_command(build_doc_cmd, "build-doc")
-    cli.add_command(deploy_doc_cmd, "deploy-doc")
+    cli.add_command(build_docker_cmd, "docker-build")
+    cli.add_command(deploy_docker_cmd, "docker-deploy")
+    cli.add_command(build_doc_cmd, "doc-build")
+    cli.add_command(deploy_doc_cmd, "doc-deploy")
     cli.add_command(init_cmd, "init")
 
 

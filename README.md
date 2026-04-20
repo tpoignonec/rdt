@@ -33,12 +33,12 @@ pip install rdt
 
 ```bash
 rdt info          # show detected context and config
+rdt init          # scaffold project files
 rdt deps          # install dependencies (vcs, apt, rosdep)
 rdt build         # colcon build
 rdt test          # colcon test
-rdt build-docker  # build Docker image
-rdt deploy-docker # push image to registry
-rdt build-doc     # build Sphinx docs
-rdt deploy-doc    # deploy to GitHub/GitLab Pages
-rdt init          # scaffold project files
+rdt docker-build  # build Docker image
+rdt docker-deploy # push image to registry
+rdt doc-build     # build Sphinx docs
+rdt doc-deploy    # deploy to GitHub/GitLab Pages
 ```
