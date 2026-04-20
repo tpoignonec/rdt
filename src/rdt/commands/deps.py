@@ -30,6 +30,10 @@ def deps_cmd(
     config = load_config()
     distro = ros_distro or config.ros_distro
 
+    if not skip_apt:
+        info("Running apt update / upgrade...")
+        run_shell(_apt_command())
+
     if not skip_vcs:
         repos = find_repos_file(repos_file)
         if repos:
@@ -37,10 +41,6 @@ def deps_cmd(
             run(["vcs", "import", "--recursive", "--input", str(repos)])
         else:
             info("No .repos file found, skipping vcs import.")
-
-    if not skip_apt:
-        info("Running apt update / upgrade...")
-        run_shell(_apt_command())
 
     if not skip_rosdep:
         info(f"Installing rosdep dependencies (distro={distro})...")
