@@ -1,4 +1,5 @@
 """rdt test — colcon test."""
+
 from __future__ import annotations
 
 import click
@@ -12,8 +13,12 @@ from rdt.runner import run_shell
 @click.command()
 @click.option("--ros-distro", default=None, help="ROS 2 distribution.")
 @click.option("--install-dir", default=None, help="ROS install prefix to source.")
-@click.option("--retest-until-pass", default=None, type=int,
-              help="Pass --retest-until-pass N to colcon (retry N times on failure).")
+@click.option(
+    "--retest-until-pass",
+    default=None,
+    type=int,
+    help="Pass --retest-until-pass N to colcon (retry N times on failure).",
+)
 @click.option("--colcon-args", multiple=True, metavar="ARG", help="Extra colcon args (repeatable).")
 @click.option("--packages-select", multiple=True, metavar="PKG", help="Test only these packages.")
 def test_cmd(
@@ -32,10 +37,7 @@ def test_cmd(
     pkgs = list(packages_select) if packages_select else list(config.test.packages_select)
 
     # Source ROS underlay + workspace overlay (if built)
-    source = (
-        f"{source_ros(inst_dir, distro)}"
-        " && { . install/setup.bash 2>/dev/null || true; }"
-    )
+    source = f"{source_ros(inst_dir, distro)} && {{ . install/setup.bash 2>/dev/null || true; }}"
     test_str = colcon_test_cmd(retries, colcon, pkgs)
     info(f"Running tests (distro={distro})...")
     run_shell(f"{source} && {test_str} && colcon test-result --verbose")

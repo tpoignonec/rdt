@@ -1,4 +1,5 @@
 """Tests for CLI structure and command registration."""
+
 from __future__ import annotations
 
 from click.testing import CliRunner

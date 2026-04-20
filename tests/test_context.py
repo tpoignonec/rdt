@@ -1,4 +1,5 @@
 """Tests for environment detection (Context)."""
+
 from __future__ import annotations
 
 import pytest
@@ -57,27 +58,45 @@ def test_gitlab_detection(monkeypatch):
 
 def test_image_tag_main():
     ctx = Context(
-        is_github=True, is_gitlab=False,
-        branch="main", commit_sha="", project_name="mypkg",
-        repo_url="", registry_user="", registry_token="", doc_token="",
+        is_github=True,
+        is_gitlab=False,
+        branch="main",
+        commit_sha="",
+        project_name="mypkg",
+        repo_url="",
+        registry_user="",
+        registry_token="",
+        doc_token="",
     )
     assert ctx.resolve_image_tag() == "latest"
 
 
 def test_image_tag_master():
     ctx = Context(
-        is_github=True, is_gitlab=False,
-        branch="master", commit_sha="", project_name="mypkg",
-        repo_url="", registry_user="", registry_token="", doc_token="",
+        is_github=True,
+        is_gitlab=False,
+        branch="master",
+        commit_sha="",
+        project_name="mypkg",
+        repo_url="",
+        registry_user="",
+        registry_token="",
+        doc_token="",
     )
     assert ctx.resolve_image_tag() == "latest"
 
 
 def test_image_tag_feature_branch():
     ctx = Context(
-        is_github=False, is_gitlab=True,
-        branch="feature/my-feature", commit_sha="", project_name="mypkg",
-        repo_url="", registry_user="", registry_token="", doc_token="",
+        is_github=False,
+        is_gitlab=True,
+        branch="feature/my-feature",
+        commit_sha="",
+        project_name="mypkg",
+        repo_url="",
+        registry_user="",
+        registry_token="",
+        doc_token="",
     )
     assert ctx.resolve_image_tag() == "feature-my-feature"
 

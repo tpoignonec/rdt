@@ -3,13 +3,15 @@ from __future__ import annotations
 from rich.console import Console
 from rich.theme import Theme
 
-_theme = Theme({
-    "info": "cyan",
-    "success": "bold green",
-    "warning": "yellow",
-    "error": "bold red",
-    "debug": "dim",
-})
+_theme = Theme(
+    {
+        "info": "cyan",
+        "success": "bold green",
+        "warning": "yellow",
+        "error": "bold red",
+        "debug": "dim",
+    }
+)
 
 _console = Console(theme=_theme)
 _err_console = Console(stderr=True, theme=_theme)

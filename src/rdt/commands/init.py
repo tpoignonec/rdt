@@ -1,4 +1,5 @@
 """rdt init — scaffold project configuration and CI template files."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -42,12 +43,24 @@ def _write(path: Path, content: str, force: bool) -> None:
 
 
 @click.command()
-@click.option("--project-name", default=None, help="Project name (default: current directory name).")
+@click.option(
+    "--project-name", default=None, help="Project name (default: current directory name)."
+)
 @click.option("--ros-distro", default="jazzy", show_default=True, help="ROS 2 distribution.")
-@click.option("--with", "include", multiple=True, metavar="TARGET",
-              help="Include only these targets (repeatable).")
-@click.option("--without", "exclude", multiple=True, metavar="TARGET",
-              help="Exclude these targets (repeatable).")
+@click.option(
+    "--with",
+    "include",
+    multiple=True,
+    metavar="TARGET",
+    help="Include only these targets (repeatable).",
+)
+@click.option(
+    "--without",
+    "exclude",
+    multiple=True,
+    metavar="TARGET",
+    help="Exclude these targets (repeatable).",
+)
 @click.option("--list", "list_targets", is_flag=True, help="List available targets and exit.")
 @click.option("--force", is_flag=True, help="Overwrite existing files.")
 def init_cmd(
@@ -76,14 +89,16 @@ def init_cmd(
 
     _write(
         cwd / ".rdt.yaml",
-        (_TEMPLATES / "config.yaml").read_text()
+        (_TEMPLATES / "config.yaml")
+        .read_text()
         .replace("PROJECT_NAME", name)
         .replace("ROS_DISTRO", ros_distro),
         force,
     )
     _write(
         cwd / "Dockerfile",
-        (_TEMPLATES / "Dockerfile").read_text()
+        (_TEMPLATES / "Dockerfile")
+        .read_text()
         .replace("PROJECT_NAME", name)
         .replace("ROS_DISTRO", ros_distro),
         force,
@@ -93,4 +108,4 @@ def init_cmd(
         for rel, content in _target_files(target, name, ros_distro).items():
             _write(cwd / rel, content, force)
 
-    success(f"Done. Edit .rdt.yaml and Dockerfile as needed.")
+    success("Done. Edit .rdt.yaml and Dockerfile as needed.")

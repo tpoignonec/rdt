@@ -1,4 +1,5 @@
 """rdt build-doc and rdt deploy-doc — Sphinx documentation."""
+
 from __future__ import annotations
 
 import runpy
@@ -13,8 +14,8 @@ from rdt.console import abort, info, success
 from rdt.context import get_context
 from rdt.runner import run, run_shell
 
-
 # ── helpers ───────────────────────────────────────────────────────────────────
+
 
 def _extract_html_context(conf_py: Path) -> dict:  # type: ignore[type-arg]
     """Execute conf.py in an isolated namespace and return html_context."""
@@ -34,7 +35,7 @@ def _redirect_html(target: str) -> str:
         "<!DOCTYPE html><html><head>"
         f'<meta http-equiv="refresh" content="0; url={target}">'
         f'<link rel="canonical" href="{target}"/>'
-        f"</head><body><p>Redirecting to <a href=\"{target}\">{target}</a></p></body></html>\n"
+        f'</head><body><p>Redirecting to <a href="{target}">{target}</a></p></body></html>\n'
     )
 
 
@@ -44,6 +45,7 @@ def _inject_token(url: str, token: str, user: str = "oauth2") -> str:
 
 
 # ── build-doc ─────────────────────────────────────────────────────────────────
+
 
 @click.command()
 @click.option("--sphinx-dir", default=None, metavar="DIR", help="Sphinx source root.")
@@ -81,8 +83,7 @@ def build_doc_cmd(sphinx_dir: str | None, output_dir: str | None) -> None:
         lang_out = out_dir / branch / lang
         lang_out.mkdir(parents=True, exist_ok=True)
         info(f"  language={lang} -> {lang_out}")
-        run(["sphinx-build", "-b", "html", "-D", f"language={lang}",
-             str(source), str(lang_out)])
+        run(["sphinx-build", "-b", "html", "-D", f"language={lang}", str(source), str(lang_out)])
 
     redirect = f"{default_branch}/{default_lang}/"
     (out_dir / "index.html").write_text(_redirect_html(redirect))
@@ -90,6 +91,7 @@ def build_doc_cmd(sphinx_dir: str | None, output_dir: str | None) -> None:
 
 
 # ── deploy-doc ────────────────────────────────────────────────────────────────
+
 
 @click.command()
 @click.option("--built-doc-path", default=None, metavar="DIR")
@@ -117,6 +119,7 @@ def deploy_doc_cmd(built_doc_path: str | None, publish_root: str | None) -> None
 
 def _deploy_github(built: Path, ctx: object) -> None:
     from rdt.context import Context
+
     assert isinstance(ctx, Context)
 
     publish = Path("/tmp/rdt-gh-pages")

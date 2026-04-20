@@ -1,4 +1,5 @@
 """rdt deps — install workspace dependencies (vcs, apt, rosdep)."""
+
 from __future__ import annotations
 
 import click

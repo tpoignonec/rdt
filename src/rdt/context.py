@@ -49,9 +49,7 @@ class Context:
 
 def _git(*args: str) -> str:
     try:
-        return subprocess.check_output(
-            ["git", *args], stderr=subprocess.DEVNULL, text=True
-        ).strip()
+        return subprocess.check_output(["git", *args], stderr=subprocess.DEVNULL, text=True).strip()
     except Exception:
         return ""
 

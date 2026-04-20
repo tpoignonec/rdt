@@ -1,8 +1,8 @@
 """Tests for config loading and Pydantic models."""
+
 from __future__ import annotations
 
 import textwrap
-from pathlib import Path
 
 import pytest
 
@@ -26,12 +26,14 @@ def test_load_missing_file(tmp_path, monkeypatch):
 
 def test_load_partial_yaml(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    (tmp_path / ".rdt.yaml").write_text(textwrap.dedent("""\
+    (tmp_path / ".rdt.yaml").write_text(
+        textwrap.dedent("""\
         ros_distro: humble
         build:
           cmake_args:
             - -DCMAKE_BUILD_TYPE=Debug
-    """))
+    """)
+    )
     config = load_config()
     assert config.ros_distro == "humble"
     assert "-DCMAKE_BUILD_TYPE=Debug" in config.build.cmake_args
@@ -40,7 +42,8 @@ def test_load_partial_yaml(tmp_path, monkeypatch):
 
 def test_load_full_yaml(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    (tmp_path / ".rdt.yaml").write_text(textwrap.dedent("""\
+    (tmp_path / ".rdt.yaml").write_text(
+        textwrap.dedent("""\
         ros_distro: rolling
         install_dir: /custom/ros
         build:
@@ -53,7 +56,8 @@ def test_load_full_yaml(tmp_path, monkeypatch):
           builder: kaniko
         doc:
           sphinx_dir: docs/sphinx
-    """))
+    """)
+    )
     config = load_config()
     assert config.ros_distro == "rolling"
     assert config.install_dir == "/custom/ros"

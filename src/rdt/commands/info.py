@@ -1,11 +1,12 @@
 """rdt info — show detected context and resolved configuration."""
+
 from __future__ import annotations
 
 import click
-from rich.table import Table
 from rich.console import Console
+from rich.table import Table
 
-from rdt.config import load_config, find_config_path
+from rdt.config import find_config_path, load_config
 from rdt.context import get_context
 
 _console = Console()
@@ -23,15 +24,17 @@ def info_cmd() -> None:
     t.add_column("key", style="cyan")
     t.add_column("value")
 
-    t.add_row("platform",     ctx.platform)
-    t.add_row("project",      ctx.project_name)
-    t.add_row("branch",       ctx.branch)
-    t.add_row("commit",       ctx.commit_sha[:12] if ctx.commit_sha else "(none)")
-    t.add_row("repo_url",     ctx.repo_url or "(none)")
-    t.add_row("image_tag",    ctx.resolve_image_tag())
-    t.add_row("registry_user",  ctx.registry_user or "(not set)")
-    t.add_row("REGISTRY_TOKEN", "[green]set[/green]" if ctx.registry_token else "[dim]not set[/dim]")
-    t.add_row("SECRET_TOKEN",   "[green]set[/green]" if ctx.doc_token    else "[dim]not set[/dim]")
+    t.add_row("platform", ctx.platform)
+    t.add_row("project", ctx.project_name)
+    t.add_row("branch", ctx.branch)
+    t.add_row("commit", ctx.commit_sha[:12] if ctx.commit_sha else "(none)")
+    t.add_row("repo_url", ctx.repo_url or "(none)")
+    t.add_row("image_tag", ctx.resolve_image_tag())
+    t.add_row("registry_user", ctx.registry_user or "(not set)")
+    t.add_row(
+        "REGISTRY_TOKEN", "[green]set[/green]" if ctx.registry_token else "[dim]not set[/dim]"
+    )
+    t.add_row("SECRET_TOKEN", "[green]set[/green]" if ctx.doc_token else "[dim]not set[/dim]")
     _console.print(t)
     _console.print()
 
@@ -41,16 +44,16 @@ def info_cmd() -> None:
     t2.add_column("key", style="cyan")
     t2.add_column("value")
 
-    t2.add_row("ros_distro",         config.ros_distro)
-    t2.add_row("install_dir",        config.install_dir)
+    t2.add_row("ros_distro", config.ros_distro)
+    t2.add_row("install_dir", config.install_dir)
     t2.add_row("build.install_base", config.build.install_base)
-    t2.add_row("build.cmake_args",   " ".join(config.build.cmake_args) or "(none)")
+    t2.add_row("build.cmake_args", " ".join(config.build.cmake_args) or "(none)")
     t2.add_row("build.cmake_build_type", config.build.cmake_build_type or "(none)")
     t2.add_row("test.retest_until_pass", str(config.test.retest_until_pass))
-    t2.add_row("docker.registry",    config.docker.registry or "(not set)")
-    t2.add_row("docker.builder",     config.docker.builder)
-    t2.add_row("docker.base_image",  config.docker.base_image or f"ros:{config.ros_distro}-ros-base")
-    t2.add_row("doc.sphinx_dir",     config.doc.sphinx_dir)
+    t2.add_row("docker.registry", config.docker.registry or "(not set)")
+    t2.add_row("docker.builder", config.docker.builder)
+    t2.add_row("docker.base_image", config.docker.base_image or f"ros:{config.ros_distro}-ros-base")
+    t2.add_row("doc.sphinx_dir", config.doc.sphinx_dir)
     _console.print(t2)
 
     # ── Resolved image name ───────────────────────────────────────────

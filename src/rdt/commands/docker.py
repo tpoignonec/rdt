@@ -1,4 +1,5 @@
 """rdt build-docker and rdt deploy-docker."""
+
 from __future__ import annotations
 
 import base64
@@ -22,10 +23,16 @@ def _full_image(registry: str, project: str, tag: str) -> str:
 @click.option("--dockerfile", default=None, metavar="FILE")
 @click.option("--tag", default=None, help="Image tag (overrides auto-detection).")
 @click.option("--registry", default=None)
-@click.option("--build-arg", multiple=True, metavar="KEY=VALUE", help="Extra build args (repeatable).")
+@click.option(
+    "--build-arg", multiple=True, metavar="KEY=VALUE", help="Extra build args (repeatable)."
+)
 @click.option("--builder", type=click.Choice(["docker", "kaniko"]), default=None)
 @click.option("--ros-distro", default=None)
-@click.option("--install-prefix", default=None, help="Install prefix inside image (default: /opt/ros/<project>).")
+@click.option(
+    "--install-prefix",
+    default=None,
+    help="Install prefix inside image (default: /opt/ros/<project>).",
+)
 @click.option("--base-image", default=None, help="Override BASE_IMAGE build-arg.")
 def build_docker_cmd(
     dockerfile: str | None,
@@ -85,9 +92,12 @@ def _kaniko_build(image: str, dockerfile: str, bargs: dict[str, str], ctx: objec
 
     cmd = [
         "/kaniko/executor",
-        "--context", "dir://.",
-        "--dockerfile", dockerfile,
-        "--destination", image,
+        "--context",
+        "dir://.",
+        "--dockerfile",
+        dockerfile,
+        "--destination",
+        image,
     ]
     for k, v in bargs.items():
         cmd += ["--build-arg", f"{k}={v}"]
@@ -97,7 +107,9 @@ def _kaniko_build(image: str, dockerfile: str, bargs: dict[str, str], ctx: objec
 @click.command()
 @click.option("--tag", default=None, help="Image tag (overrides auto-detection).")
 @click.option("--registry", default=None)
-@click.option("--also-tag", multiple=True, metavar="TAG", help="Additional tags to push (repeatable).")
+@click.option(
+    "--also-tag", multiple=True, metavar="TAG", help="Additional tags to push (repeatable)."
+)
 def deploy_docker_cmd(
     tag: str | None,
     registry: str | None,

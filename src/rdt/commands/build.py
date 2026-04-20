@@ -1,4 +1,5 @@
 """rdt build — colcon build."""
+
 from __future__ import annotations
 
 import click

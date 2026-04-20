@@ -1,4 +1,5 @@
 """Tests for ROS2/colcon command builders."""
+
 from __future__ import annotations
 
 from rdt.commands._ros import colcon_build_cmd, colcon_test_cmd, source_ros
