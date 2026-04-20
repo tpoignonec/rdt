@@ -1,0 +1,28 @@
+# .rdt.yaml — ROS2 Dev Tools project configuration
+# All fields are optional. Sensible defaults are applied automatically.
+
+ros_distro: ROS_DISTRO
+# install_dir: /opt/ros
+
+build:
+  cmake_args:
+    - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    - -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+  # colcon_args: []
+  # packages_select: []
+  # install_base: install
+
+test:
+  retest_until_pass: 0
+  # colcon_args: []
+  # packages_select: []
+
+docker:
+  # registry: ghcr.io/myorg           # e.g. ghcr.io/org, registry.gitlab.com/group/project
+  # dockerfile: Dockerfile
+  # builder: docker                    # docker | kaniko
+  # base_image: ""                     # default: ros:<distro>-ros-base
+
+doc:
+  sphinx_dir: doc/sphinx
+  output_dir: doc/sphinx/build/html
