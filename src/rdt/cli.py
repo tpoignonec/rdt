@@ -18,7 +18,7 @@ def _register() -> None:
     from rdt.commands.build import build_cmd
     from rdt.commands.deps import deps_cmd
     from rdt.commands.doc import build_doc_cmd, deploy_doc_cmd
-    from rdt.commands.docker import build_docker_cmd, deploy_docker_cmd
+    from rdt.commands.docker import build_docker_cmd, deploy_docker_cmd, save_docker_cmd
     from rdt.commands.info import info_cmd
     from rdt.commands.init import init_cmd
     from rdt.commands.test import test_cmd
@@ -29,6 +29,7 @@ def _register() -> None:
     cli.add_command(test_cmd, "test")
     cli.add_command(build_docker_cmd, "docker-build")
     cli.add_command(deploy_docker_cmd, "docker-deploy")
+    cli.add_command(save_docker_cmd, "docker-save")
     cli.add_command(build_doc_cmd, "doc-build")
     cli.add_command(deploy_doc_cmd, "doc-deploy")
     cli.add_command(init_cmd, "init")

@@ -39,6 +39,7 @@ rdt doc-deploy    # deploy to GitHub/GitLab Pages
 # Docker-related commands
 rdt docker-build  # build Docker image
 rdt docker-deploy # push image to registry
+rdt docker-save   # save image to a tar archive
 ```
 ## Build and test ROS2 packages
 
@@ -115,6 +116,22 @@ or, if you used a custom tag,
 ```bash
 rdt docker-deploy --tag my_tag
 ```
+
+### Save image to a tar archive
+
+To export an image to a file (e.g. for transfer to an air-gapped machine):
+
+```bash
+rdt docker-save
+```
+
+This produces `<project>-<tag>.tar` in the current directory. Use `-o` to specify a custom path:
+
+```bash
+rdt docker-save -o /tmp/my-image.tar
+```
+
+The image can later be loaded with `docker load -i <file>.tar`.
 
 ## Documentation (`doc-build` / `doc-deploy`)
 

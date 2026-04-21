@@ -5,7 +5,9 @@ from __future__ import annotations
 import base64
 import json
 import os
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any, TypeVar
 
 import click
 
@@ -13,6 +15,8 @@ from rdt.config import load_config
 from rdt.console import abort, info, is_verbose, success
 from rdt.context import Context, get_context
 from rdt.runner import run
+
+_FC = TypeVar("_FC", bound=Callable[..., Any])
 
 _BUNDLED_DOCKERFILE = str(Path(__file__).parent.parent / "templates" / "Dockerfile")
 
@@ -22,15 +26,21 @@ def _full_image(registry: str, project: str, tag: str) -> str:
     return f"{base}:{tag}"
 
 
+def _image_options(func: _FC) -> _FC:
+    """Shared --tag / --registry options used by all docker subcommands."""
+    func = click.option("--registry", default=None)(func)
+    func = click.option("--tag", default=None, help="Image tag (overrides auto-detection).")(func)
+    return func
+
+
 @click.command()
+@_image_options
 @click.option(
     "--dockerfile",
     default=None,
     metavar="FILE",
     help="Release Dockerfile (default: rdt bundled Dockerfile).",
 )
-@click.option("--tag", default=None, help="Image tag (overrides auto-detection).")
-@click.option("--registry", default=None)
 @click.option(
     "--build-arg",
     multiple=True,
@@ -187,8 +197,7 @@ def _kaniko_build(image: str, dockerfile: str, bargs: dict[str, str], ctx: Conte
 
 
 @click.command()
-@click.option("--tag", default=None, help="Image tag (overrides auto-detection).")
-@click.option("--registry", default=None)
+@_image_options
 @click.option(
     "--also-tag",
     multiple=True,
@@ -226,3 +235,31 @@ def deploy_docker_cmd(
         info(f"Also pushed: {extra_image}")
 
     success(f"Image pushed: {image}")
+
+
+@click.command()
+@_image_options
+@click.option(
+    "--output",
+    "-o",
+    default=None,
+    metavar="FILE",
+    help="Output tar file (default: <project>-<tag>.tar).",
+)
+def save_docker_cmd(
+    tag: str | None,
+    registry: str | None,
+    output: str | None,
+) -> None:
+    """Save a Docker image to a tar archive."""
+    config = load_config()
+    ctx = get_context()
+
+    reg = registry or config.docker.registry
+    image_tag = tag or ctx.resolve_image_tag()
+    image = _full_image(reg, ctx.project_name, image_tag)
+    out = output or f"{ctx.project_name}-{image_tag}.tar"
+
+    info(f"Saving {image} -> {out}")
+    run(["docker", "save", "-o", out, image])
+    success(f"Image saved: {out}")
