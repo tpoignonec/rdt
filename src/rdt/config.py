@@ -31,6 +31,9 @@ class DocConfig(BaseModel):
     output_dir: str = "doc/sphinx/build/html"
     multi_version: bool = False
     apt_packages: list[str] = Field(default_factory=list)
+    languages: list[str] = Field(default_factory=lambda: ["en"])
+    default_language: str = "en"
+    default_branch: str = "main"
 
 
 class RdtConfig(BaseModel):

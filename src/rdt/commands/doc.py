@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import runpy
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any
 
 import click
 
@@ -18,19 +16,6 @@ from rdt.runner import run, run_shell
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
-
-def _extract_html_context(conf_py: Path) -> dict[str, Any]:
-    """Execute conf.py in an isolated namespace and return html_context."""
-    ns = runpy.run_path(str(conf_py))
-    result: dict[str, Any] = ns.get("html_context", {})
-    return result
-
-
-def _languages_for_branch(html_context: dict[str, Any], branch: str) -> list[str]:
-    per_branch: dict[str, Any] = html_context.get("language_per_branch", {})
-    if branch in per_branch:
-        return list(per_branch[branch])
-    return [html_context.get("default_language", "en")]
 
 
 def _redirect_html(target: str) -> str:
@@ -139,10 +124,9 @@ def build_doc_cmd(
     if not conf_py.exists():
         abort(f"conf.py not found: {conf_py}")
 
-    html_context = _extract_html_context(conf_py)
     branch = ctx.branch
-    langs = _languages_for_branch(html_context, branch)
-    default_lang = html_context.get("default_language", "en")
+    langs = config.doc.languages
+    default_lang = config.doc.default_language
     resolved_release = release or _detect_release(branch)
 
     pip_cmd = "pip"
@@ -178,7 +162,7 @@ def build_doc_cmd(
     build_kwargs = dict(branch=branch, commit=ctx.commit_sha, release=resolved_release)
 
     if multi_version:
-        default_branch = html_context.get("default_branch", "main")
+        default_branch = config.doc.default_branch
         for lang in langs:
             lang_out = out_dir / branch / lang
             lang_out.mkdir(parents=True, exist_ok=True)
