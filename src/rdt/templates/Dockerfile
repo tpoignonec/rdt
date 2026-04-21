@@ -41,7 +41,7 @@ RUN --mount=type=secret,id=git_token,required=false \
 # Compiles the workspace in Release mode. Artifacts land at INSTALL_PREFIX.
 FROM deps AS builder
 
-ARG INSTALL_PREFIX=/opt/ros/PROJECT_NAME
+ARG INSTALL_PREFIX=/opt/ros/iris
 
 RUN rdt build --install-base ${INSTALL_PREFIX}
 
@@ -49,7 +49,8 @@ RUN rdt build --install-base ${INSTALL_PREFIX}
 # Lean image: deps already installed, sources discarded, only built artifacts kept.
 FROM deps AS runtime
 
-ARG INSTALL_PREFIX=/opt/ros/PROJECT_NAME
+ARG INSTALL_PREFIX=/opt/ros/iris
+ENV INSTALL_PREFIX=${INSTALL_PREFIX}
 
 # Cleanup sources and intermediate files, keep only built artifacts.
 RUN rm -rf /ws
