@@ -8,13 +8,14 @@
     },
     "workspaceMount": "source=${localWorkspaceFolder},target=/ws,type=bind",
     "workspaceFolder": "/ws",
-    "remoteUser": "dev",
+    "remoteUser": "root",
     "runArgs": [
         "--network=host",
         "--ipc=host",
         "--privileged",
         "-e", "DISPLAY=${localEnv:DISPLAY}",
-        "-v", "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+        "-v", "/tmp/.X11-unix:/tmp/.X11-unix:rw",
+        "-v", "/var/run/docker.sock:/var/run/docker.sock"
     ],
     "customizations": {
         "vscode": {
