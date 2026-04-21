@@ -23,9 +23,7 @@ class TestConfig(BaseModel):
 
 class DockerConfig(BaseModel):
     registry: str = ""
-    dockerfile: str = "Dockerfile"
     builder: Literal["docker", "kaniko"] = "docker"
-    base_image: str = ""
 
 
 class DocConfig(BaseModel):
@@ -38,6 +36,8 @@ class DocConfig(BaseModel):
 class RdtConfig(BaseModel):
     ros_distro: str = "jazzy"
     install_dir: str = "/opt/ros"
+    base_image_name: str = ""
+    base_image_dockerfile: str = ""
     build: BuildConfig = Field(default_factory=BuildConfig)
     test: TestConfig = Field(default_factory=TestConfig)
     docker: DockerConfig = Field(default_factory=DockerConfig)
