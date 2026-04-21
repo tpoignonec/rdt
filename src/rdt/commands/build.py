@@ -30,7 +30,7 @@ def build_cmd(
     """Build the ROS2 workspace with colcon."""
     config = load_config()
     distro = ros_distro or config.ros_distro
-    inst_dir = install_dir or config.install_dir
+    # inst_dir = install_dir or config.install_dir
     inst_base = install_base or config.build.install_base
     cmake = list(cmake_args) if cmake_args else list(config.build.cmake_args)
     build_type = cmake_build_type or config.build.cmake_build_type

@@ -31,7 +31,7 @@ def test_cmd(
     """Run tests with colcon."""
     config = load_config()
     distro = ros_distro or config.ros_distro
-    inst_dir = install_dir or config.install_dir
+    # inst_dir = install_dir or config.install_dir
     retries = retest_until_pass if retest_until_pass is not None else config.test.retest_until_pass
     colcon = list(colcon_args) if colcon_args else list(config.test.colcon_args)
     pkgs = list(packages_select) if packages_select else list(config.test.packages_select)

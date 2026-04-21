@@ -18,7 +18,7 @@ test:
   # packages_select: []
 
 docker:
-  # registry: ghcr.io/myorg           # e.g. ghcr.io/org, registry.gitlab.com/group/project
+  # registry: registry.app.unistra.fr/group/project
   # dockerfile: Dockerfile
   # builder: docker                    # docker | kaniko
   # base_image: ""                     # default: ros:<distro>-ros-base

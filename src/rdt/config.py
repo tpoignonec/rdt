@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, Field
@@ -56,7 +56,7 @@ def find_config_path() -> Path | None:
     return None
 
 
-def _normalize_config_data(data: dict) -> dict:
+def _normalize_config_data(data: dict[str, Any]) -> dict[str, Any]:
     for key in ("build", "test", "docker", "doc"):
         if data.get(key) is None:
             data[key] = {}
