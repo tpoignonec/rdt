@@ -1,17 +1,10 @@
 # rdt — ROS2 Dev Tools
 
 Lightweight CLI toolbox for ROS2 project build, test, and CI/CD workflows.
-No Dagger, no containers required — runs anywhere (local, GitHub CI, GitLab CI).
-
-See [spec.md](spec.md) for the full specification.
+Designed for the IRIS-robotics team for use with the UNISTRA Gitlab instance.
+It does not require privileged Gitlab runner and can be use locally with only ROS2 dependencies.
 
 ## Install
-
-### From Pypi
-
-TODO
-
-### From source
 
 Create and activate a virtual environment:
 
@@ -26,21 +19,101 @@ source .venv/bin/activate
 Install `rdt` inside the activated virtual environment:
 
 ```bash
-pip install rdt
+pip install git+https://github.com/tpoignonec/rdt.git@main
 ```
+
+If you want a specific version, replace `main` with another branch or tag.
 
 ## Quick start
 
 ```bash
 rdt info          # show detected context and config
 rdt init          # scaffold project files
+# ROS2 commands
 rdt deps          # install dependencies (vcs, apt, rosdep)
 rdt build         # colcon build
 rdt test          # colcon test
-rdt docker-build  # build Docker image
-rdt docker-deploy # push image to registry
+# Documentation-related commands
 rdt doc-build     # build Sphinx docs
 rdt doc-deploy    # deploy to GitHub/GitLab Pages
+# Docker-related commands
+rdt docker-build  # build Docker image
+rdt docker-deploy # push image to registry
+```
+## Build and test ROS2 packages
+
+Most commands will work with the default config, at the exception of documentation related commands (e.g., `doc-build`). If ROS2 is already source in the terminal, you can run
+```bash
+rdt deps
+rdt build
+rdt test
+```
+
+If ROS2 is not source in you local context, pass the distro as argument:
+```bash
+rdt deps --ros-distro jazzy
+rdt build --ros-distro jazzy
+rdt test --ros-distro jazzy
+```
+or create a `.rdt.yaml` file as follows:
+```yaml
+# .rdt.yaml
+ros_distro: jazzy
+```
+
+Note that this is the preferred method.
+To inspect your config, run
+```bash
+rdt info
+```
+
+## Docker
+
+### Preliminaries
+
+If you want to push the image to the container registry, start by configuring docker and rdt as follows:
+
+1. Create personal token with read/write container registry permissions.
+2. Docker registry login.
+   Example for Unistra Gitlab registry:
+```bash
+docker login registry.app.unistra.fr -u <username> -p <personal token>
+# You should see "Login Succeeded"
+```
+3. Configure the registry.
+   For instance, if the repos is located at `https://git.unistra.fr/group/subgroup/project`:
+```yaml
+# in .rdt.yaml
+...
+docker:
+  registry: registry.app.unistra.fr/group/subgroup
+```
+
+### Build an image locally
+
+Simply run
+
+```bash
+rdt docker-build
+# run `rdt -v docker-build` for more verbose
+```
+
+By default, the tag is resolved from the current git branch, if you want a custom tag, you can use the argument `--tag <tag>`:
+```bash
+rdt docker-build --tag my_tag
+```
+
+If private repositories are present in the `.repos` file, make sure that you have sufficient permission and that your ssh agent is correctly configured. It should be possible in the host to clone the repos using ssh.
+
+### Deploy to the registry
+
+If everything is configured correctly, run
+```bash
+rdt docker-deploy
+```
+or, if you used a custom tag,
+```bash
+rdt docker-deploy --tag my_tag
 ```
 
 ## Documentation (`doc-build` / `doc-deploy`)
