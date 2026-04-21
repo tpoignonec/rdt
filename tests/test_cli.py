@@ -45,22 +45,22 @@ def test_deps_help() -> None:
 
 
 def test_deps_uses_sudo_when_not_root(monkeypatch: pytest.MonkeyPatch) -> None:
-    import rdt.commands.deps as deps
+    import rdt.commands._apt as _apt
 
     monkeypatch.setattr(os, "geteuid", lambda: 1000)
     monkeypatch.setattr(shutil, "which", lambda path: "/usr/bin/sudo")
 
-    assert deps._apt_command() == "sudo apt-get update && apt-get upgrade -y"
+    assert _apt._apt_cmd(None) == ["sudo", "apt-get"]
 
 
 def test_deps_requires_root_or_sudo(monkeypatch: pytest.MonkeyPatch) -> None:
-    import rdt.commands.deps as deps
+    import rdt.commands._apt as _apt
 
     monkeypatch.setattr(os, "geteuid", lambda: 1000)
     monkeypatch.setattr(shutil, "which", lambda path: None)
 
     with pytest.raises(click.ClickException):
-        deps._apt_command()
+        _apt._apt_cmd(None)
 
 
 def test_build_help() -> None:

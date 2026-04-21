@@ -34,7 +34,8 @@ def run(
     check: bool = True,
 ) -> int:
     """Run a command, streaming output to the terminal. Returns returncode."""
-    env = _clean_env(os.environ.copy())
+    # env = _clean_env(os.environ.copy())
+    env = os.environ.copy()
     if extra_env:
         env.update(extra_env)
     debug(f"$ {shlex.join(cmd)}")

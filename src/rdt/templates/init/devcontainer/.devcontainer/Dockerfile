@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-pip \
         git \
         sudo \
+        docker.io \
     && rm -rf /var/lib/apt/lists/*
 
 # Install rdt for local development convenience
@@ -21,18 +22,6 @@ RUN apt-get update \
     && ln -s /opt/venv/bin/rdt /usr/local/bin/rdt \
     && rm -rf /var/lib/apt/lists/*
 
-# Non-root user
-ARG USERNAME=dev
-ARG USER_UID=1000
-ARG USER_GID=${USER_UID}
-RUN groupadd --gid ${USER_GID} ${USERNAME} 2>/dev/null \
-    || groupmod -n ${USERNAME} $(getent group ${USER_GID} | cut -d: -f1) \
-    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -s /bin/bash 2>/dev/null \
-    || usermod -l ${USERNAME} -d /home/${USERNAME} -m $(getent passwd ${USER_UID} | cut -d: -f1) \
-    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
-    && chmod 0440 /etc/sudoers.d/${USERNAME}
-
-USER ${USERNAME}
 WORKDIR /ws
 
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc \

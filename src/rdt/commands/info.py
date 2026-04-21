@@ -52,8 +52,12 @@ def info_cmd() -> None:
     t2.add_row("test.retest_until_pass", str(config.test.retest_until_pass))
     t2.add_row("docker.registry", config.docker.registry or "(not set)")
     t2.add_row("docker.builder", config.docker.builder)
-    t2.add_row("docker.base_image", config.docker.base_image or f"ros:{config.ros_distro}-ros-base")
+    base_image = config.base_image_name or f"ros:{config.ros_distro}-ros-base"
+    t2.add_row("base_image_name", base_image)
     t2.add_row("doc.sphinx_dir", config.doc.sphinx_dir)
+    t2.add_row("doc.output_dir", config.doc.output_dir)
+    t2.add_row("doc.multi_version", str(config.doc.multi_version))
+    t2.add_row("doc.apt_packages", " ".join(config.doc.apt_packages) or "(none)")
     _console.print(t2)
 
     # ── Resolved image name ───────────────────────────────────────────

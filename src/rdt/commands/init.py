@@ -44,9 +44,16 @@ def _write(path: Path, content: str, force: bool) -> None:
 
 @click.command()
 @click.option(
-    "--project-name", default=None, help="Project name (default: current directory name)."
+    "--project-name",
+    default=None,
+    help="Project name (default: current directory name).",
 )
-@click.option("--ros-distro", default="jazzy", show_default=True, help="ROS 2 distribution.")
+@click.option(
+    "--ros-distro",
+    default="jazzy",
+    show_default=True,
+    help="ROS 2 distribution.",
+)
 @click.option(
     "--with",
     "include",
@@ -95,17 +102,8 @@ def init_cmd(
         .replace("ROS_DISTRO", ros_distro),
         force,
     )
-    _write(
-        cwd / "Dockerfile",
-        (_TEMPLATES / "Dockerfile")
-        .read_text()
-        .replace("PROJECT_NAME", name)
-        .replace("ROS_DISTRO", ros_distro),
-        force,
-    )
-
     for target in targets:
         for rel, content in _target_files(target, name, ros_distro).items():
             _write(cwd / rel, content, force)
 
-    success("Done. Edit .rdt.yaml and Dockerfile as needed.")
+    success("Done. Edit .rdt.yaml as needed.")

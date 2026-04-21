@@ -1,8 +1,13 @@
 # .rdt.yaml — ROS2 Dev Tools project configuration
 # All fields are optional. Sensible defaults are applied automatically.
 
-ros_distro: ROS_DISTRO
+ros_distro: jazzy
 # install_dir: /opt/ros
+
+# Base image for Docker builds. One or the other; if both empty, defaults to
+# ros:${ROS_DISTRO}-ros-base (the ARG default in the rdt bundled Dockerfile).
+# base_image_name: ""             # e.g., "registry.example.com/my-base:latest"
+# base_image_dockerfile: ""       # path to a Dockerfile that builds the base image
 
 build:
   cmake_args:
@@ -19,10 +24,11 @@ test:
 
 docker:
   # registry: registry.app.unistra.fr/group/project
-  # dockerfile: Dockerfile
   # builder: docker                    # docker | kaniko
-  # base_image: ""                     # default: ros:<distro>-ros-base
 
 doc:
   sphinx_dir: doc/sphinx
   output_dir: doc/sphinx/build/html
+  # multi_version: false              # true -> output/<branch>/<lang>/, false -> output/ or output/<lang>/
+  # apt_packages:                     # system packages installed before the sphinx build
+  #   - doxygen
