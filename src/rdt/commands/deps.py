@@ -32,7 +32,8 @@ def deps_cmd(
         repos = find_repos_file(repos_file)
         if repos:
             info(f"Importing repositories from {repos.name}...")
-            run(["vcs", "import", "--recursive", "--input", str(repos)])
+            run(["mkdir", "-p", "external"])
+            run(["vcs", "import", "external", "--recursive", "--input", str(repos)])
         else:
             info("No .repos file found, skipping vcs import.")
 
