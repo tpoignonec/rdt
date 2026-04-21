@@ -85,7 +85,6 @@ def test_empty_docker_section_uses_defaults(
     (tmp_path / ".rdt.yaml").write_text("docker:\n")
     config = load_config()
     assert config.docker.registry == ""
-    assert config.docker.dockerfile == "Dockerfile"
     assert config.docker.builder == "docker"
 
 

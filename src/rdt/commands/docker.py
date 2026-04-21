@@ -9,44 +9,68 @@ from pathlib import Path
 import click
 
 from rdt.config import load_config
-from rdt.console import abort, info, success
+from rdt.console import abort, info, is_verbose, success
 from rdt.context import Context, get_context
 from rdt.runner import run
 
-_BUNDLED_DOCKERFILE = str(
-    Path(__file__).parent.parent / 'templates' / 'Dockerfile'
-)
+_BUNDLED_DOCKERFILE = str(Path(__file__).parent.parent / "templates" / "Dockerfile")
 
 
 def _full_image(registry: str, project: str, tag: str) -> str:
-    base = f'{registry.rstrip("/")}/{project}' if registry else project
-    return f'{base}:{tag}'
+    base = f"{registry.rstrip('/')}/{project}" if registry else project
+    return f"{base}:{tag}"
 
 
 @click.command()
 @click.option(
-    '--dockerfile', default=None, metavar='FILE',
-    help='Release Dockerfile (default: rdt bundled Dockerfile).',
+    "--dockerfile",
+    default=None,
+    metavar="FILE",
+    help="Release Dockerfile (default: rdt bundled Dockerfile).",
 )
-@click.option('--tag', default=None, help='Image tag (overrides auto-detection).')
-@click.option('--registry', default=None)
+@click.option("--tag", default=None, help="Image tag (overrides auto-detection).")
+@click.option("--registry", default=None)
 @click.option(
-    '--build-arg', multiple=True, metavar='KEY=VALUE',
-    help='Extra build args (repeatable).',
+    "--build-arg",
+    multiple=True,
+    metavar="KEY=VALUE",
+    help="Extra build args (repeatable).",
 )
-@click.option('--builder', type=click.Choice(['docker', 'kaniko']), default=None)
-@click.option('--ros-distro', default=None)
+@click.option("--builder", type=click.Choice(["docker", "kaniko"]), default=None)
+@click.option("--ros-distro", default=None)
 @click.option(
-    '--install-prefix', default=None,
-    help='Install prefix inside image (default: /opt/ros/<project>).',
+    "--install-prefix",
+    default=None,
+    help="Install prefix inside image (default: /opt/ros/<project>).",
 )
 @click.option(
-    '--base-image-name', default=None, metavar='IMAGE',
-    help='Base image name/tag.',
+    "--base-image-name",
+    default=None,
+    metavar="IMAGE",
+    help="Base image name/tag.",
 )
 @click.option(
-    '--base-image-dockerfile', default=None, metavar='FILE',
-    help='Dockerfile to build the base image (docker builder only).',
+    "--base-image-dockerfile",
+    default=None,
+    metavar="FILE",
+    help="Dockerfile to build the base image (docker builder only).",
+)
+@click.option(
+    "--secret",
+    "secrets",
+    multiple=True,
+    metavar="SECRET",
+    help=("BuildKit secret passed to docker build (repeatable). e.g. id=git_token,env=GIT_TOKEN"),
+)
+@click.option(
+    "--ssh",
+    "ssh_agents",
+    multiple=True,
+    metavar="SSH",
+    help=(
+        "SSH agent socket/key passed to docker build (repeatable). "
+        'Use "default" to forward the local SSH agent.'
+    ),
 )
 def build_docker_cmd(
     dockerfile: str | None,
@@ -58,12 +82,18 @@ def build_docker_cmd(
     install_prefix: str | None,
     base_image_name: str | None,
     base_image_dockerfile: str | None,
+    secrets: tuple[str, ...],
+    ssh_agents: tuple[str, ...],
 ) -> None:
     """Build a Docker image using the rdt bundled Dockerfile.
 
     The base image can be provided as a name/tag (--base-image-name) or built
     on-the-fly from a Dockerfile (--base-image-dockerfile, docker builder only).
     If neither is given, the Dockerfile ARG default is used: ros:<distro>-ros-base.
+
+    Git credentials:
+      HTTPS token  --secret id=git_token,env=GIT_TOKEN
+      SSH agent    --ssh default
     """
     config = load_config()
     ctx = get_context()
@@ -74,72 +104,96 @@ def build_docker_cmd(
     builder_ = builder or config.docker.builder
     base_name = base_image_name or config.base_image_name
     base_dockerfile = base_image_dockerfile or config.base_image_dockerfile
-    prefix = install_prefix or f'/opt/ros/{ctx.project_name}'
+    prefix = install_prefix or f"/opt/ros/{ctx.project_name}"
     image_tag = tag or ctx.resolve_image_tag()
     image = _full_image(reg, ctx.project_name, image_tag)
 
     if base_name and base_dockerfile:
-        abort('Specify either --base-image-name or --base-image-dockerfile, not both.')
+        abort("Specify either --base-image-name or --base-image-dockerfile, not both.")
 
-    bargs: dict[str, str] = {'ROS_DISTRO': distro, 'INSTALL_PREFIX': prefix}
+    if not ssh_agents and builder_ != "kaniko":
+        ssh_agents = ("default",)
+
+    if (secrets or ssh_agents) and builder_ == "kaniko":
+        abort("--secret and --ssh are not supported with the kaniko builder.")
+
+    bargs: dict[str, str] = {"ROS_DISTRO": distro, "INSTALL_PREFIX": prefix}
 
     if base_dockerfile:
-        if builder_ == 'kaniko':
-            abort('--base-image-dockerfile is not supported with the kaniko builder.')
-        base_tag = f'rdt-base-{ctx.project_name}:local'
-        info(f'Building base image from {base_dockerfile} -> {base_tag} ...')
-        _docker_build(base_tag, base_dockerfile, {'ROS_DISTRO': distro})
-        bargs['BASE_IMAGE'] = base_tag
+        if builder_ == "kaniko":
+            abort("--base-image-dockerfile is not supported with the kaniko builder.")
+        base_tag = f"rdt-base-{ctx.project_name}:local"
+        info(f"Building base image from {base_dockerfile} -> {base_tag} ...")
+        _docker_build(base_tag, base_dockerfile, {"ROS_DISTRO": distro})
+        bargs["BASE_IMAGE"] = base_tag
     elif base_name:
-        bargs['BASE_IMAGE'] = base_name
+        bargs["BASE_IMAGE"] = base_name
 
     for kv in build_arg:
-        k, _, v = kv.partition('=')
+        k, _, v = kv.partition("=")
         bargs[k] = v
 
-    info(f'Building image: {image} (builder={builder_})')
-    if builder_ == 'kaniko':
+    info(f"Building image: {image} (builder={builder_})")
+    if builder_ == "kaniko":
         _kaniko_build(image, dockerfile_, bargs, ctx)
     else:
-        _docker_build(image, dockerfile_, bargs)
-    success(f'Image built: {image}')
+        _docker_build(image, dockerfile_, bargs, secrets=secrets, ssh_agents=ssh_agents)
+    success(f"Image built: {image}")
 
 
-def _docker_build(image: str, dockerfile: str, bargs: dict[str, str]) -> None:
-    cmd = ['docker', 'build', '-t', image, '-f', dockerfile]
+def _docker_build(
+    image: str,
+    dockerfile: str,
+    bargs: dict[str, str],
+    *,
+    secrets: tuple[str, ...] = (),
+    ssh_agents: tuple[str, ...] = (),
+) -> None:
+    cmd = ["docker", "build"]
+    if is_verbose():
+        cmd.append("--progress=plain")
+    cmd += ["-t", image, "-f", dockerfile]
     for k, v in bargs.items():
-        cmd += ['--build-arg', f'{k}={v}']
-    cmd.append('.')
-    run(cmd)
+        cmd += ["--build-arg", f"{k}={v}"]
+    for s in secrets:
+        cmd += ["--secret", s]
+    for s in ssh_agents:
+        cmd += ["--ssh", s]
+    cmd.append(".")
+    # BuildKit is required for --secret and --ssh; harmless to set otherwise.
+    run(cmd, extra_env={"DOCKER_BUILDKIT": "1"} if (secrets or ssh_agents) else None)
 
 
 def _kaniko_build(image: str, dockerfile: str, bargs: dict[str, str], ctx: Context) -> None:
     if ctx.registry_token:
-        registry = image.split('/')[0]
-        auth = base64.b64encode(
-            f'{ctx.registry_user}:{ctx.registry_token}'.encode()
-        ).decode()
-        config_path = Path('/kaniko/.docker/config.json')
+        registry = image.split("/")[0]
+        auth = base64.b64encode(f"{ctx.registry_user}:{ctx.registry_token}".encode()).decode()
+        config_path = Path("/kaniko/.docker/config.json")
         config_path.parent.mkdir(parents=True, exist_ok=True)
-        config_path.write_text(json.dumps({'auths': {registry: {'auth': auth}}}))
+        config_path.write_text(json.dumps({"auths": {registry: {"auth": auth}}}))
 
     cmd = [
-        '/kaniko/executor',
-        '--context', 'dir://.',
-        '--dockerfile', dockerfile,
-        '--destination', image,
+        "/kaniko/executor",
+        "--context",
+        "dir://.",
+        "--dockerfile",
+        dockerfile,
+        "--destination",
+        image,
     ]
     for k, v in bargs.items():
-        cmd += ['--build-arg', f'{k}={v}']
+        cmd += ["--build-arg", f"{k}={v}"]
     run(cmd)
 
 
 @click.command()
-@click.option('--tag', default=None, help='Image tag (overrides auto-detection).')
-@click.option('--registry', default=None)
+@click.option("--tag", default=None, help="Image tag (overrides auto-detection).")
+@click.option("--registry", default=None)
 @click.option(
-    '--also-tag', multiple=True, metavar='TAG',
-    help='Additional tags to push (repeatable).',
+    "--also-tag",
+    multiple=True,
+    metavar="TAG",
+    help="Additional tags to push (repeatable).",
 )
 def deploy_docker_cmd(
     tag: str | None,
@@ -155,20 +209,20 @@ def deploy_docker_cmd(
     image = _full_image(reg, ctx.project_name, image_tag)
 
     if ctx.registry_token:
-        info('Logging in to registry...')
-        login_registry = reg or image.split('/')[0]
+        info("Logging in to registry...")
+        login_registry = reg or image.split("/")[0]
         run(
-            ['docker', 'login', '-u', ctx.registry_user, '--password-stdin', login_registry],
+            ["docker", "login", "-u", ctx.registry_user, "--password-stdin", login_registry],
             input=ctx.registry_token,
         )
 
-    info(f'Pushing: {image}')
-    run(['docker', 'push', image])
+    info(f"Pushing: {image}")
+    run(["docker", "push", image])
 
     for extra in also_tag:
         extra_image = _full_image(reg, ctx.project_name, extra)
-        run(['docker', 'tag', image, extra_image])
-        run(['docker', 'push', extra_image])
-        info(f'Also pushed: {extra_image}')
+        run(["docker", "tag", image, extra_image])
+        run(["docker", "push", extra_image])
+        info(f"Also pushed: {extra_image}")
 
-    success(f'Image pushed: {image}')
+    success(f"Image pushed: {image}")
