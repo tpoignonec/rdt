@@ -47,6 +47,49 @@ def _inject_token(url: str, token: str, user: str = "oauth2") -> str:
     return f"{parts[0]}://{user}:{token}@{parts[1]}" if len(parts) == 2 else url
 
 
+def _detect_release(branch: str) -> str:
+    """Return a release string from the nearest git tag, or fall back to the branch name."""
+    import subprocess
+
+    try:
+        return subprocess.check_output(
+            ["git", "describe", "--tags", "--abbrev=0"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+    except Exception:
+        return branch
+
+
+def _run_sphinx_build(
+    sphinx_build_cmd: str,
+    source: Path,
+    out_dir: Path,
+    *,
+    lang: str,
+    branch: str,
+    commit: str,
+    release: str,
+) -> None:
+    run(
+        [
+            sphinx_build_cmd,
+            "-b",
+            "html",
+            "-D",
+            f"language={lang}",
+            "-D",
+            f"git_branch={branch}",
+            "-D",
+            f"git_commit={commit}",
+            "-D",
+            f"release={release}",
+            str(source),
+            str(out_dir),
+        ]
+    )
+
+
 # ── build-doc ─────────────────────────────────────────────────────────────────
 
 
@@ -61,11 +104,19 @@ def _inject_token(url: str, token: str, user: str = "oauth2") -> str:
     default=False,
     help="Build into <output-dir>/<branch>/<lang>/ (multi-version layout).",
 )
+@click.option(
+    "--release",
+    default=None,
+    metavar="VERSION",
+    help="Release string injected as html_context.git_commit and Sphinx release. "
+    "Defaults to the nearest git tag (git describe), or the branch name.",
+)
 def build_doc_cmd(
     sphinx_dir: str | None,
     output_dir: str | None,
     use_venv: bool = False,
     multi_version: bool = False,
+    release: str | None = None,
 ) -> None:
     """Build Sphinx documentation (multi-language support).
 
@@ -92,6 +143,7 @@ def build_doc_cmd(
     branch = ctx.branch
     langs = _languages_for_branch(html_context, branch)
     default_lang = html_context.get("default_language", "en")
+    resolved_release = release or _detect_release(branch)
 
     pip_cmd = "pip"
     sphinx_build_cmd = "sphinx-build"
@@ -123,26 +175,28 @@ def build_doc_cmd(
             "sphinx-intl update -p build/gettext"
         )
 
+    build_kwargs = dict(branch=branch, commit=ctx.commit_sha, release=resolved_release)
+
     if multi_version:
         default_branch = html_context.get("default_branch", "main")
         for lang in langs:
             lang_out = out_dir / branch / lang
             lang_out.mkdir(parents=True, exist_ok=True)
             info(f"  language={lang} -> {lang_out}")
-            run([sphinx_build_cmd, "-b", "html", "-D", f"language={lang}", str(source), str(lang_out)])
+            _run_sphinx_build(sphinx_build_cmd, source, lang_out, lang=lang, **build_kwargs)
         redirect = f"{default_branch}/{default_lang}/"
         (out_dir / "index.html").write_text(_redirect_html(redirect))
     else:
         if len(langs) == 1:
             out_dir.mkdir(parents=True, exist_ok=True)
             info(f"  language={langs[0]} -> {out_dir}")
-            run([sphinx_build_cmd, "-b", "html", "-D", f"language={langs[0]}", str(source), str(out_dir)])
+            _run_sphinx_build(sphinx_build_cmd, source, out_dir, lang=langs[0], **build_kwargs)
         else:
             for lang in langs:
                 lang_out = out_dir / lang
                 lang_out.mkdir(parents=True, exist_ok=True)
                 info(f"  language={lang} -> {lang_out}")
-                run([sphinx_build_cmd, "-b", "html", "-D", f"language={lang}", str(source), str(lang_out)])
+                _run_sphinx_build(sphinx_build_cmd, source, lang_out, lang=lang, **build_kwargs)
             redirect = f"{default_lang}/"
             (out_dir / "index.html").write_text(_redirect_html(redirect))
 

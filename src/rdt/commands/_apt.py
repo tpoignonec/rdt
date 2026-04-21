@@ -22,9 +22,7 @@ def _resolve_sudo(use_sudo: bool | None) -> bool:
         return False
     if shutil.which("sudo"):
         return True
-    raise click.ClickException(
-        "apt-get requires root privileges; run as root or install sudo."
-    )
+    raise click.ClickException("apt-get requires root privileges; run as root or install sudo.")
 
 
 def _apt_cmd(use_sudo: bool | None) -> list[str]:
