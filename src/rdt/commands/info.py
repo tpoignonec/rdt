@@ -6,6 +6,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 
+from rdt import __version__
 from rdt.config import find_config_path, load_config
 from rdt.context import get_context
 
@@ -24,6 +25,7 @@ def info_cmd() -> None:
     t.add_column("key", style="cyan")
     t.add_column("value")
 
+    t.add_row("rdt", __version__)
     t.add_row("platform", ctx.platform)
     t.add_row("project", ctx.project_name)
     t.add_row("branch", ctx.branch)
