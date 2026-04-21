@@ -52,7 +52,8 @@ def _inject_token(url: str, token: str, user: str = "oauth2") -> str:
 @click.command()
 @click.option("--sphinx-dir", default=None, metavar="DIR", help="Sphinx source root.")
 @click.option("--output-dir", default=None, metavar="DIR", help="Build output directory.")
-def build_doc_cmd(sphinx_dir: str | None, output_dir: str | None) -> None:
+@click.option("--use-venv", is_flag=True, default=False, help="Use virtualenv for building docs.")
+def build_doc_cmd(sphinx_dir: str | None, output_dir: str | None, use_venv: bool = False) -> None:
     """Build Sphinx documentation (multi-language support)."""
     config = load_config()
     ctx = get_context()
@@ -71,12 +72,28 @@ def build_doc_cmd(sphinx_dir: str | None, output_dir: str | None) -> None:
     default_branch = html_context.get("default_branch", "main")
     default_lang = html_context.get("default_language", "en")
 
+    source_venv_cmd = ''
+
+    info(f"Install requirements for building docs...")
+    # TODO: apt install system dependencies for sphinx build (latex & co.)
+
+    if use_venv:
+        info("Setting up virtualenv for building docs...")
+        venv_dir = Path("/tmp/rdt-doc-venv")
+        if venv_dir.exists():
+            shutil.rmtree(venv_dir)
+        run(["python3", "-m", "venv", str(venv_dir)])
+        source_venv_cmd = f"source {venv_dir}/bin/activate && "
+
+    info(f"Install sphinx requirements...")
+    run([f"{source_venv_cmd}pip", "install", "-r", str(src_dir / "requirements.txt")])
+
     info(f"Building docs: branch={branch}, languages={langs}")
 
     if len(langs) > 1:
         info("Running gettext extraction...")
         run_shell(
-            f"cd {src_dir} && "
+            f"{source_venv_cmd} cd {src_dir} && "
             "sphinx-build -b gettext source build/gettext && "
             "sphinx-intl update -p build/gettext"
         )
@@ -85,7 +102,7 @@ def build_doc_cmd(sphinx_dir: str | None, output_dir: str | None) -> None:
         lang_out = out_dir / branch / lang
         lang_out.mkdir(parents=True, exist_ok=True)
         info(f"  language={lang} -> {lang_out}")
-        run(["sphinx-build", "-b", "html", "-D", f"language={lang}", str(source), str(lang_out)])
+        run([f"{source_venv_cmd}sphinx-build", "-b", "html", "-D", f"language={lang}", str(source), str(lang_out)])
 
     redirect = f"{default_branch}/{default_lang}/"
     (out_dir / "index.html").write_text(_redirect_html(redirect))
