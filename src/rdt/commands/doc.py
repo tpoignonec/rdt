@@ -93,7 +93,8 @@ def build_doc_cmd(
     langs = _languages_for_branch(html_context, branch)
     default_lang = html_context.get("default_language", "en")
 
-    source_venv_cmd = ""
+    pip_cmd = "pip"
+    sphinx_build_cmd = "sphinx-build"
 
     info("Install requirements for building docs...")
     if config.doc.apt_packages:
@@ -102,22 +103,23 @@ def build_doc_cmd(
 
     if use_venv:
         info("Setting up virtualenv for building docs...")
-        venv_dir = Path("/tmp/rdt-doc-venv")
+        venv_dir = Path(".venv").absolute()
         if venv_dir.exists():
             shutil.rmtree(venv_dir)
         run(["python3", "-m", "venv", str(venv_dir)])
-        source_venv_cmd = f"source {venv_dir}/bin/activate && "
+        pip_cmd = str(venv_dir / "bin" / "pip")
+        sphinx_build_cmd = str(venv_dir / "bin" / "sphinx-build")
 
     info("Install sphinx requirements...")
-    run([f"{source_venv_cmd}pip", "install", "-r", str(src_dir / "requirements.txt")])
+    run([pip_cmd, "install", "-r", str(src_dir / "requirements.txt")])
 
     info(f"Building docs: branch={branch}, languages={langs}, multi_version={multi_version}")
 
     if len(langs) > 1:
         info("Running gettext extraction...")
         run_shell(
-            f"{source_venv_cmd} cd {src_dir} && "
-            "sphinx-build -b gettext source build/gettext && "
+            f"cd {src_dir} && "
+            f"{sphinx_build_cmd} -b gettext source build/gettext && "
             "sphinx-intl update -p build/gettext"
         )
 
@@ -127,20 +129,20 @@ def build_doc_cmd(
             lang_out = out_dir / branch / lang
             lang_out.mkdir(parents=True, exist_ok=True)
             info(f"  language={lang} -> {lang_out}")
-            run([f"{source_venv_cmd}sphinx-build", "-b", "html", "-D", f"language={lang}", str(source), str(lang_out)])
+            run([sphinx_build_cmd, "-b", "html", "-D", f"language={lang}", str(source), str(lang_out)])
         redirect = f"{default_branch}/{default_lang}/"
         (out_dir / "index.html").write_text(_redirect_html(redirect))
     else:
         if len(langs) == 1:
             out_dir.mkdir(parents=True, exist_ok=True)
             info(f"  language={langs[0]} -> {out_dir}")
-            run([f"{source_venv_cmd}sphinx-build", "-b", "html", "-D", f"language={langs[0]}", str(source), str(out_dir)])
+            run([sphinx_build_cmd, "-b", "html", "-D", f"language={langs[0]}", str(source), str(out_dir)])
         else:
             for lang in langs:
                 lang_out = out_dir / lang
                 lang_out.mkdir(parents=True, exist_ok=True)
                 info(f"  language={lang} -> {lang_out}")
-                run([f"{source_venv_cmd}sphinx-build", "-b", "html", "-D", f"language={lang}", str(source), str(lang_out)])
+                run([sphinx_build_cmd, "-b", "html", "-D", f"language={lang}", str(source), str(lang_out)])
             redirect = f"{default_lang}/"
             (out_dir / "index.html").write_text(_redirect_html(redirect))
 
