@@ -161,8 +161,7 @@ def _docker_build(
     for s in ssh_agents:
         cmd += ["--ssh", s]
     cmd.append(".")
-    # BuildKit is required for --secret and --ssh; harmless to set otherwise.
-    run(cmd, extra_env={"DOCKER_BUILDKIT": "1"} if (secrets or ssh_agents) else None)
+    run(cmd, extra_env={"DOCKER_BUILDKIT": "1"})
 
 
 def _kaniko_build(image: str, dockerfile: str, bargs: dict[str, str], ctx: Context) -> None:

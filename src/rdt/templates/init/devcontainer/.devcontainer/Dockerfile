@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         docker.io \
     && rm -rf /var/lib/apt/lists/*
 
+COPY --from=docker/buildx-bin:latest /buildx /usr/local/lib/docker/cli-plugins/docker-buildx
+
 # Install rdt for local development convenience
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3-pip python3-venv git \
