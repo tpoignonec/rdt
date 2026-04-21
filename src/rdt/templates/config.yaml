@@ -26,3 +26,4 @@ docker:
 doc:
   sphinx_dir: doc/sphinx
   output_dir: doc/sphinx/build/html
+  # multi_version: false              # true -> output/<branch>/<lang>/, false -> output/ or output/<lang>/
