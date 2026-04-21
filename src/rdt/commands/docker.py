@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 from pathlib import Path
 
 import click
@@ -111,7 +112,7 @@ def build_docker_cmd(
     if base_name and base_dockerfile:
         abort("Specify either --base-image-name or --base-image-dockerfile, not both.")
 
-    if not ssh_agents and builder_ != "kaniko":
+    if not ssh_agents and builder_ != "kaniko" and os.environ.get("SSH_AUTH_SOCK"):
         ssh_agents = ("default",)
 
     if (secrets or ssh_agents) and builder_ == "kaniko":
