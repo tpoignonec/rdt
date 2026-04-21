@@ -1,7 +1,7 @@
 # .rdt.yaml — ROS2 Dev Tools project configuration
 # All fields are optional. Sensible defaults are applied automatically.
 
-ros_distro: ROS_DISTRO
+ros_distro: jazzy
 # install_dir: /opt/ros
 
 build:
@@ -27,3 +27,5 @@ doc:
   sphinx_dir: doc/sphinx
   output_dir: doc/sphinx/build/html
   # multi_version: false              # true -> output/<branch>/<lang>/, false -> output/ or output/<lang>/
+  # apt_packages:                     # system packages installed before the sphinx build
+  #   - doxygen

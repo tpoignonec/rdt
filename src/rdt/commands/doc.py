@@ -10,6 +10,7 @@ from typing import Any
 
 import click
 
+from rdt.commands._apt import apt_install
 from rdt.config import load_config
 from rdt.console import abort, info, success
 from rdt.context import get_context
@@ -95,7 +96,9 @@ def build_doc_cmd(
     source_venv_cmd = ""
 
     info("Install requirements for building docs...")
-    # TODO: apt install system dependencies for sphinx build (latex & co.)
+    if config.doc.apt_packages:
+        info(f"Installing apt packages: {config.doc.apt_packages}")
+        apt_install(config.doc.apt_packages)
 
     if use_venv:
         info("Setting up virtualenv for building docs...")

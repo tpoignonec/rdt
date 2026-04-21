@@ -32,6 +32,7 @@ class DocConfig(BaseModel):
     sphinx_dir: str = "doc/sphinx"
     output_dir: str = "doc/sphinx/build/html"
     multi_version: bool = False
+    apt_packages: list[str] = Field(default_factory=list)
 
 
 class RdtConfig(BaseModel):
