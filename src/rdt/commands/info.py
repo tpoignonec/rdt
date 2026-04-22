@@ -47,7 +47,6 @@ def info_cmd() -> None:
     t2.add_column("value")
 
     t2.add_row("ros_distro", config.ros_distro)
-    t2.add_row("install_dir", config.install_dir)
     t2.add_row("build.install_base", config.build.install_base)
     t2.add_row("build.cmake_args", " ".join(config.build.cmake_args) or "(none)")
     t2.add_row("build.cmake_build_type", config.build.cmake_build_type or "(none)")

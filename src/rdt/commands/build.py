@@ -12,7 +12,6 @@ from rdt.runner import run_shell
 
 @click.command()
 @click.option("--ros-distro", default=None, help="ROS 2 distribution.")
-@click.option("--install-dir", default=None, help="ROS install prefix to source.")
 @click.option("--install-base", default=None, help="colcon --install-base (artifact output dir).")
 @click.option("--cmake-args", multiple=True, metavar="ARG", help="Extra CMake args (repeatable).")
 @click.option("--cmake-build-type", default=None, help="CMake build type (e.g. Release).")
@@ -20,7 +19,6 @@ from rdt.runner import run_shell
 @click.option("--packages-select", multiple=True, metavar="PKG", help="Build only these packages.")
 def build_cmd(
     ros_distro: str | None,
-    install_dir: str | None,
     install_base: str | None,
     cmake_args: tuple[str, ...],
     cmake_build_type: str | None,
@@ -30,7 +28,6 @@ def build_cmd(
     """Build the ROS2 workspace with colcon."""
     config = load_config()
     distro = ros_distro or config.ros_distro
-    # inst_dir = install_dir or config.install_dir
     inst_base = install_base or config.build.install_base
     cmake = list(cmake_args) if cmake_args else list(config.build.cmake_args)
     build_type = cmake_build_type or config.build.cmake_build_type

@@ -12,7 +12,6 @@ from rdt.runner import run_shell
 
 @click.command()
 @click.option("--ros-distro", default=None, help="ROS 2 distribution.")
-@click.option("--install-dir", default=None, help="ROS install prefix to source.")
 @click.option(
     "--retest-until-pass",
     default=None,
@@ -23,7 +22,6 @@ from rdt.runner import run_shell
 @click.option("--packages-select", multiple=True, metavar="PKG", help="Test only these packages.")
 def test_cmd(
     ros_distro: str | None,
-    install_dir: str | None,
     retest_until_pass: int | None,
     colcon_args: tuple[str, ...],
     packages_select: tuple[str, ...],
@@ -31,7 +29,6 @@ def test_cmd(
     """Run tests with colcon."""
     config = load_config()
     distro = ros_distro or config.ros_distro
-    # inst_dir = install_dir or config.install_dir
     retries = retest_until_pass if retest_until_pass is not None else config.test.retest_until_pass
     colcon = list(colcon_args) if colcon_args else list(config.test.colcon_args)
     pkgs = list(packages_select) if packages_select else list(config.test.packages_select)

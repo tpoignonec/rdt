@@ -38,7 +38,6 @@ class DocConfig(BaseModel):
 
 class RdtConfig(BaseModel):
     ros_distro: str = "jazzy"
-    install_dir: str = "/opt/ros"
     base_image_name: str = ""
     base_image_dockerfile: str = ""
     build: BuildConfig = Field(default_factory=BuildConfig)
